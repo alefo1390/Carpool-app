@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Carpool Colleghi</title>
+
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+
+<!-- FIREBASE VERSIONE COMPATIBILE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+</head>
+
+<body>
+
+<h1>🚗 Carpool Colleghi</h1>
+
+<h2>Seleziona chi è presente oggi</h2>
+
+<div id="colleghi">
+
+<label><input type="checkbox" value="Marco"> Marco</label>
+<label><input type="checkbox" value="Luca"> Luca</label>
+<label><input type="checkbox" value="Anna"> Anna</label>
+<label><input type="checkbox" value="Paolo"> Paolo</label>
+<label><input type="checkbox" value="Giulia"> Giulia</label>
+
+</div>
+
+<button onclick="calcolaGuidatore()">Calcola guidatore</button>
+
+<button onclick="oggiNonVengo()">❌ Oggi non vengo</button>
+
+<h2 id="risultato">🚗 Guidatore di oggi: —</h2>
+
+<h2>Calendario viaggi</h2>
+
+<div id="calendario"></div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
