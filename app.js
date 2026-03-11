@@ -33,73 +33,79 @@ function getToday(){
 // --- CALCOLO GUIDATORE ---
 function calcolaGuidatore(){
 
+  const today = getToday();
+
   const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
   const presenti = Array.from(checkboxes).map(c => c.value);
 
   if(presenti.length === 0){
-
     document.getElementById("risultato").innerHTML =
     "Seleziona almeno un collega";
-
     return;
   }
 
-  db.collection("carpool")
-  .orderBy("timestamp","desc")
-  .limit(1)
-  .get()
+  // controlla se esiste già guidatore oggi
+  db.collection("carpool").doc(today).get().then(doc => {
 
-  .then(snapshot => {
+    if(doc.exists && doc.data().driver){
 
-    if(!snapshot.empty){
+      document.getElementById("risultato").innerHTML =
+      "🚗 Guidatore già scelto oggi: " + doc.data().driver;
 
-      snapshot.forEach(doc => {
-        ultimoDriver = doc.data().driver || null;
-      });
-
-    }else{
-
-      ultimoDriver = null;
-
+      return;
     }
 
-    let index = ultimoDriver ? colleghi.indexOf(ultimoDriver) : -1;
-    let driver = null;
+    // prende ultimo guidatore
+    db.collection("carpool")
+    .orderBy("timestamp","desc")
+    .limit(1)
+    .get()
+    .then(snapshot => {
 
-    for(let i=1;i<=colleghi.length;i++){
-
-      let prossimo = colleghi[(index+i)%colleghi.length];
-
-      if(presenti.includes(prossimo)){
-        driver = prossimo;
-        break;
+      if(!snapshot.empty){
+        snapshot.forEach(d => {
+          ultimoDriver = d.data().driver || null;
+        });
+      }else{
+        ultimoDriver = null;
       }
 
-    }
+      let index = ultimoDriver ? colleghi.indexOf(ultimoDriver) : -1;
+      let driver = null;
 
-    if(driver){
+      for(let i=1;i<=colleghi.length;i++){
 
-      const today = getToday();
+        let prossimo = colleghi[(index+i)%colleghi.length];
 
-      db.collection("carpool").doc(today).set({
+        if(presenti.includes(prossimo)){
+          driver = prossimo;
+          break;
+        }
+      }
 
-        driver: driver,
-        presenti: presenti,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      if(driver){
 
-      });
+        db.collection("carpool").doc(today).set({
 
-      document.getElementById("risultato").innerHTML =
-      "🚗 Guidatore di oggi: " + driver;
+          driver: driver,
+          presenti: presenti,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
 
-      renderStorico();
+        });
 
-    }else{
+        document.getElementById("risultato").innerHTML =
+        "🚗 Guidatore di oggi: " + driver;
 
-      document.getElementById("risultato").innerHTML =
-      "Nessun guidatore disponibile";
+        renderStorico();
 
-    }
+      }else{
+
+        document.getElementById("risultato").innerHTML =
+        "Nessun guidatore disponibile";
+
+      }
+
+    });
 
   });
 
@@ -113,10 +119,8 @@ function simulaDomani(){
   const presenti = Array.from(checkboxes).map(c => c.value);
 
   if(presenti.length === 0){
-
     document.getElementById("risultato").innerHTML =
     "Seleziona almeno un collega";
-
     return;
   }
 
@@ -124,7 +128,6 @@ function simulaDomani(){
   .orderBy("timestamp","desc")
   .limit(1)
   .get()
-
   .then(snapshot => {
 
     let ultimoDriver = null;
@@ -146,7 +149,6 @@ function simulaDomani(){
         driver = prossimo;
         break;
       }
-
     }
 
     if(driver){
@@ -174,16 +176,19 @@ function oggiNonVengo(){
 
   const today = getToday();
 
+  const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
+  const presenti = Array.from(checkboxes).map(c => c.value);
+
   db.collection("carpool").doc(today).set({
 
     driver: null,
-    presenti: [],
+    presenti: presenti,
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
 
   });
 
   document.getElementById("risultato").innerHTML =
-  "❌ Oggi non vieni";
+  "❌ Presenza aggiornata. Il guidatore può essere ricalcolato.";
 
   renderStorico();
 
@@ -200,7 +205,6 @@ function renderStorico(){
   .orderBy("timestamp","desc")
   .limit(90)
   .get()
-
   .then(snapshot => {
 
     calendario.innerHTML = "";
@@ -225,11 +229,8 @@ function renderStorico(){
       });
 
       if(mese !== meseCorrente){
-
         meseCorrente = mese;
-
         calendario.innerHTML += `<h3>${mese.toUpperCase()}</h3>`;
-
       }
 
       const driver = info.driver || "Nessun guidatore";
