@@ -33,7 +33,6 @@ return new Date().toISOString().split("T")[0];
 function stessiPresenti(gruppo1, gruppo2){
 
 if(!gruppo1 || !gruppo2) return false;
-
 if(gruppo1.length !== gruppo2.length) return false;
 
 const a=[...gruppo1].sort();
@@ -87,7 +86,8 @@ rotazione.forEach(nome=>{
 html+=nome+"<br>";
 });
 
-document.getElementById("rotazione").innerHTML=html;
+const div=document.getElementById("rotazione");
+if(div) div.innerHTML=html;
 
 }
 
@@ -113,6 +113,20 @@ return;
 
 mostraRotazione(presenti);
 
+
+// 🔒 CONTROLLO BLOCCO GUIDATORE
+
+db.collection("carpool").doc(today).get().then(doc=>{
+
+if(doc.exists && doc.data().driver){
+
+alert("Guidatore già calcolato oggi");
+return;
+
+}
+
+
+// PRENDE ULTIMO TURNO
 
 db.collection("carpool")
 .orderBy("timestamp","desc")
@@ -162,6 +176,8 @@ document.getElementById("risultato").innerHTML=
 👥 Passeggeri: ${passeggeri.join(", ")}`;
 
 renderStorico();
+
+});
 
 });
 
@@ -223,7 +239,7 @@ document.getElementById("risultato").innerHTML=
 
 
 
-// OGGI NON VENGO
+// ❌ OGGI NON VENGO (SBLOCCA GUIDATORE)
 function oggiNonVengo(){
 
 const today=getToday();
@@ -231,6 +247,9 @@ const today=getToday();
 const checkboxes=document.querySelectorAll("input[type=checkbox]:checked");
 
 const presenti=Array.from(checkboxes).map(c=>c.value);
+
+
+// 🔓 SBLOCCA GUIDATORE
 
 db.collection("carpool").doc(today).set({
 
