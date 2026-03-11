@@ -12,19 +12,62 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 
-// --- COLLEGHI ---
+// --- ORDINE BASE ROTAZIONE ---
 const colleghi = [
-  "Alessio",
-  "Sebastiano",
-  "Andrea",
-  "Francesca",
-  "Rosario"
+"Alessio",
+"Sebastiano",
+"Andrea",
+"Francesca",
+"Rosario"
 ];
 
 
-// --- DATA OGGI ---
+// -----------------------------
+// DATA OGGI
+// -----------------------------
 function getToday(){
   return new Date().toISOString().split("T")[0];
+}
+
+
+
+// -----------------------------
+// ROTAZIONE DINAMICA
+// -----------------------------
+function trovaProssimoGuidatore(ultimoDriver, presenti){
+
+  const rotazione = colleghi.filter(c => presenti.includes(c));
+
+  if(rotazione.length === 0) return null;
+
+  if(!ultimoDriver || !rotazione.includes(ultimoDriver)){
+    return rotazione[0];
+  }
+
+  const index = rotazione.indexOf(ultimoDriver);
+
+  return rotazione[(index + 1) % rotazione.length];
+}
+
+
+
+// -----------------------------
+// MOSTRA ROTAZIONE ATTIVA
+// -----------------------------
+function mostraRotazione(presenti){
+
+  const rotazione = colleghi.filter(c => presenti.includes(c));
+
+  if(rotazione.length === 0) return;
+
+  let html = "<h3>🔁 Rotazione attiva</h3>";
+
+  rotazione.forEach(nome=>{
+    html += nome + "<br>";
+  });
+
+  document.getElementById("rotazione").innerHTML = html;
+
 }
 
 
@@ -37,83 +80,81 @@ function calcolaGuidatore(){
   const today = getToday();
 
   const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
+
   const presenti = Array.from(checkboxes).map(c => c.value);
 
   if(presenti.length === 0){
+
     document.getElementById("risultato").innerHTML =
     "Seleziona almeno un collega";
+
     return;
+
   }
 
-  db.collection("carpool").doc(today).get().then(doc => {
+  mostraRotazione(presenti);
 
-    // GUIDATORE GIÀ BLOCCATO
+  db.collection("carpool").doc(today).get().then(doc=>{
+
+    // GUIDATORE BLOCCATO
     if(doc.exists && doc.data().driver){
 
       const driver = doc.data().driver;
-      const presentiSalvati = doc.data().presenti || [];
-      const passeggeri = presentiSalvati.filter(nome => nome !== driver);
+
+      const passeggeri = (doc.data().presenti || [])
+      .filter(p => p !== driver);
 
       document.getElementById("risultato").innerHTML =
       `🚗 Guidatore di oggi: ${driver}<br>
        👥 Passeggeri: ${passeggeri.join(", ")}`;
 
       return;
+
     }
 
-    // PRENDE ULTIMO GUIDATORE
+    // TROVA ULTIMO GUIDATORE
     db.collection("carpool")
     .orderBy("timestamp","desc")
     .limit(1)
     .get()
-    .then(snapshot => {
+    .then(snapshot=>{
 
       let ultimoDriver = null;
 
       if(!snapshot.empty){
-        snapshot.forEach(d => {
+
+        snapshot.forEach(d=>{
           ultimoDriver = d.data().driver || null;
         });
-      }
-
-      let index = ultimoDriver ? colleghi.indexOf(ultimoDriver) : -1;
-      let driver = null;
-
-      for(let i=1;i<=colleghi.length;i++){
-
-        let prossimo = colleghi[(index+i)%colleghi.length];
-
-        if(presenti.includes(prossimo)){
-          driver = prossimo;
-          break;
-        }
 
       }
 
-      if(driver){
+      const driver = trovaProssimoGuidatore(ultimoDriver, presenti);
 
-        db.collection("carpool").doc(today).set({
-
-          driver: driver,
-          presenti: presenti,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-
-        });
-
-        const passeggeri = presenti.filter(nome => nome !== driver);
-
-        document.getElementById("risultato").innerHTML =
-        `🚗 Guidatore di oggi: ${driver}<br>
-         👥 Passeggeri: ${passeggeri.join(", ")}`;
-
-        renderStorico();
-
-      }else{
+      if(!driver){
 
         document.getElementById("risultato").innerHTML =
         "Nessun guidatore disponibile";
 
+        return;
+
       }
+
+      db.collection("carpool").doc(today).set({
+
+        driver: driver,
+        presenti: presenti,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+
+      });
+
+      const passeggeri = presenti.filter(p=>p!==driver);
+
+      document.getElementById("risultato").innerHTML =
+      `🚗 Guidatore di oggi: ${driver}<br>
+       👥 Passeggeri: ${passeggeri.join(", ")}`;
+
+      renderStorico();
 
     });
 
@@ -129,52 +170,39 @@ function calcolaGuidatore(){
 function simulaDomani(){
 
   const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
+
   const presenti = Array.from(checkboxes).map(c => c.value);
 
   if(presenti.length === 0){
+
     document.getElementById("risultato").innerHTML =
     "Seleziona almeno un collega";
+
     return;
+
   }
+
+  mostraRotazione(presenti);
 
   const today = getToday();
 
-  db.collection("carpool").doc(today).get().then(doc => {
+  db.collection("carpool").doc(today).get().then(doc=>{
 
     let ultimoDriver = null;
 
     if(doc.exists){
-      ultimoDriver = doc.data().driver || null;
-    }
 
-    let index = ultimoDriver ? colleghi.indexOf(ultimoDriver) : -1;
-    let driver = null;
-
-    for(let i=1;i<=colleghi.length;i++){
-
-      let prossimo = colleghi[(index+i)%colleghi.length];
-
-      if(presenti.includes(prossimo)){
-        driver = prossimo;
-        break;
-      }
+      ultimoDriver = doc.data().driver;
 
     }
 
-    if(driver){
+    const driver = trovaProssimoGuidatore(ultimoDriver, presenti);
 
-      const passeggeri = presenti.filter(nome => nome !== driver);
+    const passeggeri = presenti.filter(p=>p!==driver);
 
-      document.getElementById("risultato").innerHTML =
-      `🔮 Domani guiderebbe: ${driver}<br>
-       👥 Passeggeri: ${passeggeri.join(", ")}`;
-
-    }else{
-
-      document.getElementById("risultato").innerHTML =
-      "Nessun guidatore disponibile";
-
-    }
+    document.getElementById("risultato").innerHTML =
+    `🔮 Domani guiderebbe: ${driver}<br>
+     👥 Passeggeri: ${passeggeri.join(", ")}`;
 
   });
 
@@ -190,6 +218,7 @@ function oggiNonVengo(){
   const today = getToday();
 
   const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
+
   const presenti = Array.from(checkboxes).map(c => c.value);
 
   db.collection("carpool").doc(today).set({
@@ -201,7 +230,9 @@ function oggiNonVengo(){
   });
 
   document.getElementById("risultato").innerHTML =
-  "❌ Presenza aggiornata. Ricalcola il guidatore.";
+  "❌ Presenza aggiornata. Ricalcola il guidatore";
+
+  mostraRotazione(presenti);
 
   renderStorico();
 
@@ -215,19 +246,20 @@ function oggiNonVengo(){
 function renderStorico(){
 
   const calendario = document.getElementById("calendario");
+
   calendario.innerHTML = "Caricamento...";
 
   db.collection("carpool")
   .orderBy("timestamp","desc")
   .limit(90)
   .get()
-  .then(snapshot => {
+  .then(snapshot=>{
 
-    calendario.innerHTML = "";
+    calendario.innerHTML="";
 
-    let meseCorrente = "";
+    let meseCorrente="";
 
-    snapshot.forEach(doc => {
+    snapshot.forEach(doc=>{
 
       const data = doc.id;
       const info = doc.data();
@@ -244,24 +276,31 @@ function renderStorico(){
         day:'numeric'
       });
 
-      if(mese !== meseCorrente){
-        meseCorrente = mese;
-        calendario.innerHTML += `<h3>${mese.toUpperCase()}</h3>`;
+      if(mese!==meseCorrente){
+
+        meseCorrente=mese;
+
+        calendario.innerHTML+=`<h3>${mese.toUpperCase()}</h3>`;
+
       }
 
-      const driver = info.driver || "Nessun guidatore";
+      const driver = info.driver || "—";
 
-      let passeggeri = [];
+      let passeggeri=[];
 
       if(info.presenti){
-        passeggeri = info.presenti.filter(nome => nome !== driver);
+
+        passeggeri = info.presenti.filter(p=>p!==driver);
+
       }
 
-      calendario.innerHTML += `
+      calendario.innerHTML+=`
+
       <div style="margin-bottom:10px">
-        <b>${giorno}</b> — 🚗 ${driver}<br>
-        👥 Passeggeri: ${passeggeri.length ? passeggeri.join(", ") : "—"}
+      <b>${giorno}</b> — 🚗 ${driver}<br>
+      👥 Passeggeri: ${passeggeri.join(", ") || "—"}
       </div>
+
       `;
 
     });
@@ -273,19 +312,22 @@ function renderStorico(){
 
 
 // -----------------------------
-// AGGIORNAMENTO TEMPO REALE
+// REALTIME UPDATE
 // -----------------------------
 db.collection("carpool")
 .doc(getToday())
-.onSnapshot(doc => {
+.onSnapshot(doc=>{
 
   if(doc.exists){
 
     const data = doc.data();
-    const driver = data.driver || "—";
-    const passeggeri = (data.presenti || []).filter(p => p !== driver);
 
-    document.getElementById("risultato").innerHTML =
+    const driver = data.driver || "—";
+
+    const passeggeri = (data.presenti || [])
+    .filter(p=>p!==driver);
+
+    document.getElementById("risultato").innerHTML=
     `🚗 Guidatore di oggi: ${driver}<br>
      👥 Passeggeri: ${passeggeri.join(", ")}`;
 
@@ -299,7 +341,10 @@ db.collection("carpool")
 renderStorico();
 
 
+
 // SERVICE WORKER
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
+if ("serviceWorker" in navigator){
+
+navigator.serviceWorker.register("service-worker.js");
+
 }
