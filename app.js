@@ -1,12 +1,12 @@
 alert("JS caricato");
 // --- FIREBASE CONFIG ---
 const firebaseConfig = {
-  apiKey: "TUO_API_KEY",
-  authDomain: "TUO_PROJECT_ID.firebaseapp.com",
-  projectId: "TUO_PROJECT_ID",
-  storageBucket: "TUO_PROJECT_ID.appspot.com",
-  messagingSenderId: "TUO_SENDER_ID",
-  appId: "TUO_APP_ID"
+  apiKey:"AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
+  authDomain: carpool-app-3e8d5.firebaseapp.com",
+  projectId: "carpool-app-3e8d5",
+  storageBucket: "carpool-app-3e8d5.firebasestorage.app",
+  messagingSenderId: "462538199019",
+  appId: "1:462538199019:web:9e8127f6ad1642d53393ae"
 };
 
 firebase.initializeApp(firebaseConfig);
