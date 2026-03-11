@@ -76,7 +76,7 @@ const today = getToday();
 const doc = await db.collection("carpool").doc(today).get();
 
 
-// BLOCCO SOLO SE ESISTE GIÀ UN DRIVER
+// BLOCCO SOLO SE DRIVER ESISTE
 
 if(doc.exists && doc.data().driver){
 
@@ -86,7 +86,7 @@ return;
 }
 
 
-// presenti selezionati
+// PRESENTI
 
 const checkboxes =
 document.querySelectorAll("input[type=checkbox]:checked");
@@ -102,7 +102,7 @@ return;
 }
 
 
-// ultimo turno
+// ULTIMO TURNO
 
 const snapshot =
 await db.collection("carpool")
@@ -138,13 +138,13 @@ driver = presenti[(index+1) % presenti.length];
 }
 
 
-// passeggeri
+// PASSEGGERI
 
 const passeggeri =
 presenti.filter(p=>p!==driver);
 
 
-// salva su firestore
+// SALVA
 
 await db.collection("carpool").doc(today).set({
 
@@ -166,13 +166,7 @@ document.getElementById("risultato").innerHTML=
 👤 Ultimo aggiornamento
 ${utente}`;
 
-
-// notifica
-
 inviaNotifica(driver,passeggeri);
-
-
-// aggiorna storico
 
 renderCalendario();
 
@@ -265,6 +259,8 @@ document.getElementById("calendario");
 
 calendario.innerHTML="Caricamento...";
 
+try{
+
 const snapshot =
 await db.collection("carpool")
 .orderBy("timestamp","desc")
@@ -278,12 +274,12 @@ let meseCorrente="";
 snapshot.forEach(doc=>{
 
 const data = doc.id;
-const info = doc.data();
+const info = doc.data() || {};
 
-const giorno = new Date(data);
+const giornoData = new Date(data);
 
 const mese =
-giorno.toLocaleDateString('it-IT',{
+giornoData.toLocaleDateString('it-IT',{
 month:'long',
 year:'numeric'
 });
@@ -292,30 +288,38 @@ if(mese !== meseCorrente){
 
 meseCorrente=mese;
 
-calendario.innerHTML+=`<h3>${mese}</h3>`;
+calendario.innerHTML+=`<h3>${mese.toUpperCase()}</h3>`;
 
 }
 
-const giornoStr =
-giorno.toLocaleDateString('it-IT',{
+const giorno =
+giornoData.toLocaleDateString('it-IT',{
 weekday:'short',
 day:'numeric'
 });
 
-const driver =
-info.driver || "—";
+const driver = info.driver || "—";
+
+const presenti = info.presenti || [];
 
 const passeggeri =
-(info.presenti || []).filter(p=>p!==driver);
+presenti.filter(p=>p!==driver);
 
-calendario.innerHTML+=
-
-`<b>${giornoStr}</b>
-🚗 ${driver}
-👥 ${passeggeri.join(", ")}
-<br><br>`;
+calendario.innerHTML+=`
+<div style="margin-bottom:10px">
+<b>${giorno}</b><br>
+🚗 Guidatore: ${driver}<br>
+👥 Passeggeri: ${passeggeri.join(", ") || "—"}
+</div>
+`;
 
 });
+
+}catch(e){
+
+calendario.innerHTML="Errore caricamento storico";
+
+}
 
 }
 
@@ -331,15 +335,12 @@ if(doc.exists){
 
 const data = doc.data();
 
-const driver =
-data.driver || "—";
+const driver = data.driver || "—";
 
 const passeggeri =
-(data.presenti || [])
-.filter(p=>p!==driver);
+(data.presenti || []).filter(p=>p!==driver);
 
-const autore =
-data.updatedBy || "—";
+const autore = data.updatedBy || "—";
 
 document.getElementById("risultato").innerHTML=
 
