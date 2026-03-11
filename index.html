@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
 
 <meta charset="UTF-8">
@@ -10,7 +11,7 @@
 <link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.json">
 
-<!-- FIREBASE VERSIONE COMPATIBILE -->
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
@@ -32,19 +33,29 @@
 
 </div>
 
-<button onclick="calcolaGuidatore()">Calcola guidatore</button>
 
-<button onclick="simulaDomani()">🔮 Simula domani</button>
+<br>
+
+<button onclick="calcolaGuidatore()">🚗 Calcola guidatore</button>
 
 <button onclick="oggiNonVengo()">❌ Oggi non vengo</button>
 
+<button onclick="simulaDomani()">🔮 Simula domani</button>
+
+
 <h2 id="risultato">🚗 Guidatore di oggi: —</h2>
 
-<h2>Calendario viaggi</h2>
+
+<div id="rotazione"></div>
+
+
+<h2>📅 Storico viaggi</h2>
 
 <div id="calendario"></div>
+
 
 <script src="app.js"></script>
 
 </body>
+
 </html>
