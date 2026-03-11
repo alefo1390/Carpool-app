@@ -1,25 +1,11 @@
-self.addEventListener("install", event => {
-
-console.log("Service Worker installato");
-
+self.addEventListener("install", e => {
+self.skipWaiting();
 });
 
-
-self.addEventListener("activate", event => {
-
-console.log("Service Worker attivo");
-
+self.addEventListener("activate", e => {
+self.clients.claim();
 });
 
-
-self.addEventListener("notificationclick", function(event){
-
-event.notification.close();
-
-event.waitUntil(
-
-clients.openWindow("./")
-
-);
-
+self.addEventListener("fetch", event => {
+event.respondWith(fetch(event.request));
 });
