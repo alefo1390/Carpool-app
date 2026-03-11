@@ -31,6 +31,11 @@ return new Date().toISOString().split("T")[0];
 }
 
 
+// ---------------- VARIABILI ----------------
+
+let guidatoreBloccato=false;
+
+
 // ---------------- CONFRONTO PRESENTI ----------------
 
 function stessiPresenti(a,b){
@@ -50,7 +55,7 @@ return true;
 }
 
 
-// ---------------- PROSSIMO GUIDATORE ----------------
+// ---------------- TROVA GUIDATORE ----------------
 
 function trovaProssimoGuidatore(ultimoDriver,presenti,presentiIeri){
 
@@ -58,15 +63,9 @@ const rotazione = colleghi.filter(c=>presenti.includes(c));
 
 if(rotazione.length===0) return null;
 
-
-// gruppo diverso → riparte rotazione
-
 if(!stessiPresenti(presenti,presentiIeri)){
 return rotazione[0];
 }
-
-
-// continua rotazione
 
 if(!ultimoDriver || !rotazione.includes(ultimoDriver)){
 return rotazione[0];
@@ -96,14 +95,7 @@ document.getElementById("rotazione").innerHTML=html;
 }
 
 
-
-// ---------------- BLOCCO PULSANTE ----------------
-
-let guidatoreBloccato=false;
-
-
-
-// ---------------- CARICA GUIDATORE OGGI ----------------
+// ---------------- CARICA GUIDATORE SALVATO ----------------
 
 function caricaGuidatoreOggi(){
 
@@ -111,18 +103,13 @@ const today=getToday();
 
 db.collection("carpool")
 .doc(today)
-.get()
-.then(doc=>{
+.onSnapshot(doc=>{
 
 if(doc.exists){
 
 const data=doc.data();
 
-if(data.driver){
-
-guidatoreBloccato=true;
-
-const driver=data.driver;
+const driver=data.driver || "—";
 
 const passeggeri=(data.presenti||[]).filter(p=>p!==driver);
 
@@ -130,8 +117,10 @@ document.getElementById("risultato").innerHTML=
 `🚗 Guidatore di oggi: ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ")}`;
 
-mostraRotazione(data.presenti||[]);
+mostraRotazione(data.presenti || []);
 
+if(driver !== "—"){
+guidatoreBloccato=true;
 }
 
 }
@@ -139,7 +128,6 @@ mostraRotazione(data.presenti||[]);
 });
 
 }
-
 
 
 // ---------------- CALCOLA GUIDATORE ----------------
@@ -194,14 +182,6 @@ presenti,
 presentiIeri
 );
 
-if(!driver){
-
-document.getElementById("risultato").innerHTML="Nessun guidatore";
-
-return;
-
-}
-
 const today=getToday();
 
 db.collection("carpool").doc(today).set({
@@ -225,7 +205,6 @@ renderStorico();
 });
 
 }
-
 
 
 // ---------------- SIMULA DOMANI ----------------
@@ -283,7 +262,6 @@ document.getElementById("risultato").innerHTML=
 }
 
 
-
 // ---------------- OGGI NON VENGO ----------------
 
 function oggiNonVengo(){
@@ -314,7 +292,6 @@ renderStorico();
 }
 
 
-
 // ---------------- STORICO ----------------
 
 function renderStorico(){
@@ -331,32 +308,10 @@ db.collection("carpool")
 
 calendario.innerHTML="";
 
-let meseCorrente="";
-
 snapshot.forEach(doc=>{
 
 const data=doc.id;
 const info=doc.data();
-
-const dataObj=new Date(data);
-
-const mese=dataObj.toLocaleDateString('it-IT',{
-month:'long',
-year:'numeric'
-});
-
-const giorno=dataObj.toLocaleDateString('it-IT',{
-weekday:'short',
-day:'numeric'
-});
-
-if(mese!==meseCorrente){
-
-meseCorrente=mese;
-
-calendario.innerHTML+=`<h3>${mese.toUpperCase()}</h3>`;
-
-}
 
 const driver=info.driver || "—";
 
@@ -369,12 +324,11 @@ passeggeri=info.presenti.filter(p=>p!==driver);
 }
 
 calendario.innerHTML+=`
-
-<div style="margin-bottom:10px">
-<b>${giorno}</b> — 🚗 ${driver}<br>
+<div>
+<b>${data}</b> — 🚗 ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ") || "—"}
 </div>
-
+<br>
 `;
 
 });
@@ -384,13 +338,10 @@ calendario.innerHTML+=`
 }
 
 
-
 // ---------------- AVVIO APP ----------------
 
 renderStorico();
-
 caricaGuidatoreOggi();
-
 
 
 // ---------------- SERVICE WORKER ----------------
