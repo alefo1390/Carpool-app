@@ -9,7 +9,6 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const db = firebase.firestore();
 
 
@@ -65,7 +64,6 @@ function calcolaGuidatore(){
     }
 
     let index = ultimoDriver ? colleghi.indexOf(ultimoDriver) : -1;
-
     let driver = null;
 
     for(let i=1;i<=colleghi.length;i++){
@@ -73,10 +71,8 @@ function calcolaGuidatore(){
       let prossimo = colleghi[(index+i)%colleghi.length];
 
       if(presenti.includes(prossimo)){
-
         driver = prossimo;
         break;
-
       }
 
     }
@@ -97,6 +93,69 @@ function calcolaGuidatore(){
       "🚗 Guidatore di oggi: " + driver;
 
       renderStorico();
+
+    }else{
+
+      document.getElementById("risultato").innerHTML =
+      "Nessun guidatore disponibile";
+
+    }
+
+  });
+
+}
+
+
+// --- SIMULA DOMANI ---
+function simulaDomani(){
+
+  const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
+  const presenti = Array.from(checkboxes).map(c => c.value);
+
+  if(presenti.length === 0){
+
+    document.getElementById("risultato").innerHTML =
+    "Seleziona almeno un collega";
+
+    return;
+  }
+
+  db.collection("carpool")
+  .orderBy("timestamp","desc")
+  .limit(1)
+  .get()
+
+  .then(snapshot => {
+
+    let ultimoDriver = null;
+
+    if(!snapshot.empty){
+      snapshot.forEach(doc => {
+        ultimoDriver = doc.data().driver || null;
+      });
+    }
+
+    let index = ultimoDriver ? colleghi.indexOf(ultimoDriver) : -1;
+    let driver = null;
+
+    for(let i=1;i<=colleghi.length;i++){
+
+      let prossimo = colleghi[(index+i)%colleghi.length];
+
+      if(presenti.includes(prossimo)){
+        driver = prossimo;
+        break;
+      }
+
+    }
+
+    if(driver){
+
+      const passeggeri = presenti.filter(nome => nome !== driver);
+
+      document.getElementById("risultato").innerHTML =
+      `🔮 Domani guiderebbe: ${driver}<br>
+      👥 Passeggeri: ${passeggeri.join(", ")}`;
 
     }else{
 
@@ -131,7 +190,7 @@ function oggiNonVengo(){
 }
 
 
-// --- STORICO DIVISO PER MESE ---
+// --- STORICO 90 GIORNI CON PASSEGGERI ---
 function renderStorico(){
 
   const calendario = document.getElementById("calendario");
@@ -173,8 +232,20 @@ function renderStorico(){
 
       }
 
-      calendario.innerHTML +=
-      `<b>${giorno}</b> — 🚗 ${info.driver || "Nessun guidatore"} <br>`;
+      const driver = info.driver || "Nessun guidatore";
+
+      let passeggeri = [];
+
+      if(info.presenti){
+        passeggeri = info.presenti.filter(nome => nome !== driver);
+      }
+
+      calendario.innerHTML += `
+      <div style="margin-bottom:10px">
+        <b>${giorno}</b> — 🚗 ${driver}<br>
+        👥 Passeggeri: ${passeggeri.length ? passeggeri.join(", ") : "—"}
+      </div>
+      `;
 
     });
 
@@ -183,7 +254,7 @@ function renderStorico(){
 }
 
 
-// --- AGGIORNAMENTO IN TEMPO REALE ---
+// --- AGGIORNAMENTO TEMPO REALE ---
 db.collection("carpool")
 .doc(getToday())
 .onSnapshot(doc => {
@@ -200,13 +271,11 @@ db.collection("carpool")
 });
 
 
-// primo caricamento storico
+// primo caricamento
 renderStorico();
 
 
 // --- SERVICE WORKER ---
 if ("serviceWorker" in navigator) {
-
   navigator.serviceWorker.register("service-worker.js");
-
 }
