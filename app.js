@@ -1,3 +1,4 @@
+alert("JS caricato");
 // --- FIREBASE CONFIG ---
 const firebaseConfig = {
   apiKey: "TUO_API_KEY",
