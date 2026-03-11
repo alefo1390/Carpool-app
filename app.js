@@ -39,7 +39,9 @@ const colleghi = [
 // ---------------- DATA ----------------
 
 function getToday(){
+
 return new Date().toISOString().split("T")[0];
+
 }
 
 
@@ -73,12 +75,16 @@ const today = getToday();
 
 const doc = await db.collection("carpool").doc(today).get();
 
-if(doc.exists){
+
+// BLOCCO SOLO SE ESISTE GIÀ UN DRIVER
+
+if(doc.exists && doc.data().driver){
 
 alert("Guidatore già calcolato oggi");
 return;
 
 }
+
 
 // presenti selezionati
 
@@ -115,7 +121,7 @@ ultimiPresenti=d.data().presenti || [];
 });
 
 
-// logica rotazione
+// LOGICA ROTAZIONE
 
 let driver;
 
@@ -138,7 +144,7 @@ const passeggeri =
 presenti.filter(p=>p!==driver);
 
 
-// salva
+// salva su firestore
 
 await db.collection("carpool").doc(today).set({
 
@@ -187,24 +193,16 @@ let presenti =
 Array.from(checkboxes).map(c=>c.value);
 
 
-// rimuove l'utente
+// rimuove chi ha premuto
 
 presenti = presenti.filter(p=>p !== utente);
 
 
-// ricalcola guidatore
-
-let driver=null;
-
-if(presenti.length>0){
-
-driver = presenti[0];
-
-}
+// azzera guidatore
 
 await db.collection("carpool").doc(today).set({
 
-driver:driver,
+driver:null,
 presenti:presenti,
 timestamp:firebase.firestore.FieldValue.serverTimestamp(),
 updatedBy:utente
@@ -212,7 +210,8 @@ updatedBy:utente
 });
 
 document.getElementById("risultato").innerHTML=
-"❌ Presenza aggiornata";
+
+"❌ Presenza aggiornata. Premi 'Calcola guidatore'";
 
 renderCalendario();
 
@@ -257,7 +256,7 @@ ${passeggeri.join(", ")}`
 
 
 
-// ---------------- STORICO 90 GIORNI ----------------
+// ---------------- STORICO ----------------
 
 async function renderCalendario(){
 
@@ -359,6 +358,7 @@ ${autore}`;
 // ---------------- AVVIO ----------------
 
 renderCalendario();
+
 
 
 // ---------------- SERVICE WORKER ----------------
