@@ -2,7 +2,7 @@ alert("JS caricato");
 // --- FIREBASE CONFIG ---
 const firebaseConfig = {
   apiKey:"AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
-  authDomain: carpool-app-3e8d5.firebaseapp.com",
+  authDomain: "carpool-app-3e8d5.firebaseapp.com",
   projectId: "carpool-app-3e8d5",
   storageBucket: "carpool-app-3e8d5.firebasestorage.app",
   messagingSenderId: "462538199019",
@@ -160,7 +160,7 @@ function renderCalendario(){
       });
 
       calendario.innerHTML +=
-      <b>${giorno}</b> - Guidatore: ${info.driver || "—"} <br>;
+<b>${giorno}</b> - Guidatore: ${info.driver || "—"} <br>;
 
     });
 
