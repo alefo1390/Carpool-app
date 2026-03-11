@@ -1,4 +1,4 @@
-// --- FIREBASE CONFIG ---
+// ---------------- FIREBASE ----------------
 
 const firebaseConfig = {
 apiKey:"AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
@@ -13,43 +13,43 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 
-// --- NOME UTENTE (una volta sola)
+// ---------------- UTENTE ----------------
 
 let utente = localStorage.getItem("utente");
 
 if(!utente){
 
 utente = prompt("Inserisci il tuo nome");
-
 localStorage.setItem("utente",utente);
 
 }
 
 
-// --- COLLEGHI BASE
+// ---------------- COLLEGHI ----------------
 
-const colleghi = ["Alessio","Sebastiano","Andrea","Francesca","Rosario"];
+const colleghi = [
+"Alessio",
+"Sebastiano",
+"Andrea",
+"Francesca",
+"Rosario"
+];
 
 
-// --- DATA DI OGGI
+// ---------------- DATA ----------------
 
 function getToday(){
-
 return new Date().toISOString().split("T")[0];
-
 }
 
 
-// --- RICHIESTA NOTIFICHE
+// ---------------- NOTIFICHE ----------------
 
 if("Notification" in window){
 
 Notification.requestPermission();
 
 }
-
-
-// --- FUNZIONE NOTIFICA
 
 function inviaNotifica(driver,passeggeri){
 
@@ -65,7 +65,7 @@ Passeggeri: ${passeggeri.join(", ")}`
 }
 
 
-// --- CALCOLA GUIDATORE
+// ---------------- CALCOLA GUIDATORE ----------------
 
 async function calcolaGuidatore(){
 
@@ -73,41 +73,36 @@ const today = getToday();
 
 const doc = await db.collection("carpool").doc(today).get();
 
-
-// BLOCCO GUIDATORE SE ESISTE
-
 if(doc.exists){
 
 alert("Guidatore già calcolato oggi");
-
 return;
 
 }
 
+// presenti selezionati
 
-// PRESENTI
+const checkboxes =
+document.querySelectorAll("input[type=checkbox]:checked");
 
-const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
+const presenti =
+Array.from(checkboxes).map(c=>c.value);
 
-const presenti = Array.from(checkboxes).map(c=>c.value);
-
-
-if(presenti.length === 0){
+if(presenti.length===0){
 
 alert("Seleziona almeno un collega");
-
 return;
 
 }
 
 
-// PRENDE ULTIMO TURNO
+// ultimo turno
 
-const snapshot = await db.collection("carpool")
+const snapshot =
+await db.collection("carpool")
 .orderBy("timestamp","desc")
 .limit(1)
 .get();
-
 
 let ultimoDriver=null;
 let ultimiPresenti=[];
@@ -120,13 +115,13 @@ ultimiPresenti=d.data().presenti || [];
 });
 
 
-// SE CAMBIANO I PRESENTI RIPARTE ROTAZIONE
+// logica rotazione
 
-let driver=null;
+let driver;
 
 if(JSON.stringify(presenti.sort()) !== JSON.stringify(ultimiPresenti.sort())){
 
-driver=presenti[0];
+driver = presenti[0];
 
 }else{
 
@@ -137,12 +132,13 @@ driver = presenti[(index+1) % presenti.length];
 }
 
 
-// PASSEGGERI
+// passeggeri
 
-const passeggeri = presenti.filter(p=>p!==driver);
+const passeggeri =
+presenti.filter(p=>p!==driver);
 
 
-// SALVA SU FIRESTORE
+// salva
 
 await db.collection("carpool").doc(today).set({
 
@@ -165,61 +161,86 @@ document.getElementById("risultato").innerHTML=
 ${utente}`;
 
 
-// NOTIFICA
+// notifica
 
 inviaNotifica(driver,passeggeri);
 
 
-// AGGIORNA STORICO
+// aggiorna storico
 
 renderCalendario();
 
 }
 
 
-// --- OGGI NON VENGO
+
+// ---------------- OGGI NON VENGO ----------------
 
 async function oggiNonVengo(){
 
 const today = getToday();
 
+const checkboxes =
+document.querySelectorAll("input[type=checkbox]:checked");
+
+let presenti =
+Array.from(checkboxes).map(c=>c.value);
+
+
+// rimuove l'utente
+
+presenti = presenti.filter(p=>p !== utente);
+
+
+// ricalcola guidatore
+
+let driver=null;
+
+if(presenti.length>0){
+
+driver = presenti[0];
+
+}
+
 await db.collection("carpool").doc(today).set({
 
-driver:null,
-presenti:[],
+driver:driver,
+presenti:presenti,
 timestamp:firebase.firestore.FieldValue.serverTimestamp(),
 updatedBy:utente
 
 });
 
 document.getElementById("risultato").innerHTML=
-
-"❌ Hai segnato assenza";
+"❌ Presenza aggiornata";
 
 renderCalendario();
 
 }
 
 
-// --- SIMULA DOMANI
+
+// ---------------- SIMULA DOMANI ----------------
 
 function simulaDomani(){
 
-const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
+const checkboxes =
+document.querySelectorAll("input[type=checkbox]:checked");
 
-const presenti = Array.from(checkboxes).map(c=>c.value);
+const presenti =
+Array.from(checkboxes).map(c=>c.value);
 
 if(presenti.length===0){
 
 alert("Seleziona presenti");
-
 return;
 
 }
 
-const driver = presenti[0];
+let driver = presenti[0];
 
-const passeggeri = presenti.slice(1);
+let passeggeri =
+presenti.filter(p=>p!==driver);
 
 alert(
 
@@ -235,15 +256,18 @@ ${passeggeri.join(", ")}`
 }
 
 
-// --- STORICO 90 GIORNI DIVISO PER MESE
+
+// ---------------- STORICO 90 GIORNI ----------------
 
 async function renderCalendario(){
 
-const calendario = document.getElementById("calendario");
+const calendario =
+document.getElementById("calendario");
 
 calendario.innerHTML="Caricamento...";
 
-const snapshot = await db.collection("carpool")
+const snapshot =
+await db.collection("carpool")
 .orderBy("timestamp","desc")
 .limit(90)
 .get();
@@ -255,33 +279,37 @@ let meseCorrente="";
 snapshot.forEach(doc=>{
 
 const data = doc.id;
-
 const info = doc.data();
 
 const giorno = new Date(data);
 
-const mese = giorno.toLocaleDateString('it-IT',{month:'long',year:'numeric'});
+const mese =
+giorno.toLocaleDateString('it-IT',{
+month:'long',
+year:'numeric'
+});
 
 if(mese !== meseCorrente){
 
 meseCorrente=mese;
 
-calendario.innerHTML += `<h3>${mese}</h3>`;
+calendario.innerHTML+=`<h3>${mese}</h3>`;
 
 }
 
-const giornoStr = giorno.toLocaleDateString('it-IT',{
-
+const giornoStr =
+giorno.toLocaleDateString('it-IT',{
 weekday:'short',
 day:'numeric'
-
 });
 
-const driver = info.driver || "—";
+const driver =
+info.driver || "—";
 
-const passeggeri = (info.presenti || []).filter(p=>p!==driver);
+const passeggeri =
+(info.presenti || []).filter(p=>p!==driver);
 
-calendario.innerHTML +=
+calendario.innerHTML+=
 
 `<b>${giornoStr}</b>
 🚗 ${driver}
@@ -293,7 +321,8 @@ calendario.innerHTML +=
 }
 
 
-// --- AGGIORNAMENTO IN TEMPO REALE
+
+// ---------------- REALTIME ----------------
 
 db.collection("carpool")
 .doc(getToday())
@@ -303,11 +332,15 @@ if(doc.exists){
 
 const data = doc.data();
 
-const driver = data.driver || "—";
+const driver =
+data.driver || "—";
 
-const passeggeri = (data.presenti || []).filter(p=>p!==driver);
+const passeggeri =
+(data.presenti || [])
+.filter(p=>p!==driver);
 
-const autore = data.updatedBy || "—";
+const autore =
+data.updatedBy || "—";
 
 document.getElementById("risultato").innerHTML=
 
@@ -322,12 +355,13 @@ ${autore}`;
 });
 
 
-// --- CARICA STORICO
+
+// ---------------- AVVIO ----------------
 
 renderCalendario();
 
 
-// --- SERVICE WORKER
+// ---------------- SERVICE WORKER ----------------
 
 if("serviceWorker" in navigator){
 
