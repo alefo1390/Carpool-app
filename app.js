@@ -10,8 +10,8 @@ const firebaseConfig = {
   appId: "1:462538199019:web:9e8127f6ad1642d53393ae"
 };
 
-// avvio firebase
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.firestore();
 
 
@@ -42,6 +42,7 @@ function calcolaGuidatore(){
   .orderBy("timestamp","desc")
   .limit(1)
   .get()
+
   .then(snapshot => {
 
     if(!snapshot.empty){
@@ -122,6 +123,7 @@ function renderCalendario(){
   .orderBy("timestamp","desc")
   .limit(14)
   .get()
+
   .then(snapshot => {
 
     calendario.innerHTML = "";
@@ -138,7 +140,7 @@ function renderCalendario(){
       });
 
       calendario.innerHTML +=
-      <b>${giorno}</b> - Guidatore: ${info.driver || "—"} <br>;
+      `<b>${giorno}</b> - Guidatore: ${info.driver || "—"} <br>`;
 
     });
 
@@ -147,7 +149,7 @@ function renderCalendario(){
 }
 
 
-// aggiornamento realtime
+// --- UPDATE IN TEMPO REALE ---
 db.collection("carpool")
 .doc(getToday())
 .onSnapshot(doc => {
@@ -168,6 +170,7 @@ db.collection("carpool")
 renderCalendario();
 
 
-// SERVICE WORKER
+// --- SERVICE WORKER ---
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
+}
