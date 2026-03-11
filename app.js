@@ -1,7 +1,8 @@
 alert("JS caricato");
+
 // --- FIREBASE CONFIG ---
 const firebaseConfig = {
-  apiKey:"AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
+  apiKey: "AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
   authDomain: "carpool-app-3e8d5.firebaseapp.com",
   projectId: "carpool-app-3e8d5",
   storageBucket: "carpool-app-3e8d5.firebasestorage.app",
@@ -9,14 +10,13 @@ const firebaseConfig = {
   appId: "1:462538199019:web:9e8127f6ad1642d53393ae"
 };
 
+// avvio firebase
 firebase.initializeApp(firebaseConfig);
-
 const db = firebase.firestore();
 
 
 // --- COLLEGHI ---
 const colleghi = ["Marco","Luca","Anna","Paolo","Giulia"];
-
 let ultimoDriver = null;
 
 
@@ -30,39 +30,29 @@ function getToday(){
 function calcolaGuidatore(){
 
   const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
-
   const presenti = Array.from(checkboxes).map(c => c.value);
 
   if(presenti.length === 0){
-
     document.getElementById("risultato").innerHTML =
     "Seleziona almeno un collega";
-
     return;
-
   }
 
   db.collection("carpool")
   .orderBy("timestamp","desc")
   .limit(1)
   .get()
-
   .then(snapshot => {
 
     if(!snapshot.empty){
-
       snapshot.forEach(doc => {
         ultimoDriver = doc.data().driver || null;
       });
-
-    }else{
-
+    } else {
       ultimoDriver = null;
-
     }
 
     let index = ultimoDriver ? colleghi.indexOf(ultimoDriver) : -1;
-
     let driver = null;
 
     for(let i=1;i<=colleghi.length;i++){
@@ -70,11 +60,8 @@ function calcolaGuidatore(){
       let prossimo = colleghi[(index+i)%colleghi.length];
 
       if(presenti.includes(prossimo)){
-
         driver = prossimo;
-
         break;
-
       }
 
     }
@@ -84,11 +71,9 @@ function calcolaGuidatore(){
       const today = getToday();
 
       db.collection("carpool").doc(today).set({
-
         driver: driver,
         presenti: presenti,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
-
       });
 
       document.getElementById("risultato").innerHTML =
@@ -96,7 +81,7 @@ function calcolaGuidatore(){
 
       renderCalendario();
 
-    }else{
+    } else {
 
       document.getElementById("risultato").innerHTML =
       "Nessun guidatore disponibile";
@@ -114,11 +99,9 @@ function oggiNonVengo(){
   const today = getToday();
 
   db.collection("carpool").doc(today).set({
-
     driver: null,
     presenti: [],
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
-
   });
 
   document.getElementById("risultato").innerHTML =
@@ -133,14 +116,12 @@ function oggiNonVengo(){
 function renderCalendario(){
 
   const calendario = document.getElementById("calendario");
-
   calendario.innerHTML = "Caricamento...";
 
   db.collection("carpool")
   .orderBy("timestamp","desc")
   .limit(14)
   .get()
-
   .then(snapshot => {
 
     calendario.innerHTML = "";
@@ -148,19 +129,16 @@ function renderCalendario(){
     snapshot.forEach(doc => {
 
       const data = doc.id;
-
       const info = doc.data();
 
       const giorno = new Date(data).toLocaleDateString('it-IT',{
-
         weekday:'short',
         day:'numeric',
         month:'numeric'
-
       });
 
       calendario.innerHTML +=
-<b>${giorno}</b> - Guidatore: ${info.driver || "—"} <br>;
+      <b>${giorno}</b> - Guidatore: ${info.driver || "—"} <br>;
 
     });
 
@@ -169,7 +147,7 @@ function renderCalendario(){
 }
 
 
-// --- UPDATE IN TEMPO REALE ---
+// aggiornamento realtime
 db.collection("carpool")
 .doc(getToday())
 .onSnapshot(doc => {
@@ -190,9 +168,6 @@ db.collection("carpool")
 renderCalendario();
 
 
-// --- SERVICE WORKER ---
+// SERVICE WORKER
 if ("serviceWorker" in navigator) {
-
   navigator.serviceWorker.register("service-worker.js");
-
-}
