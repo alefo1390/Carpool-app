@@ -194,9 +194,9 @@ const today=getToday();
 
 db.collection("carpool").doc(today).set({
 
-driver:driver,
-presenti:presenti,
-timestamp:firebase.firestore.FieldValue.serverTimestamp()
+driver: driver,
+presenti: presenti,
+timestamp: new Date()
 
 });
 
@@ -284,7 +284,7 @@ db.collection("carpool").doc(today).set({
 
 driver:null,
 presenti:presenti,
-timestamp:firebase.firestore.FieldValue.serverTimestamp()
+timestamp:new Date()
 
 });
 
