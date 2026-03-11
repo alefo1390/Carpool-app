@@ -10,8 +10,8 @@ const firebaseConfig = {
   appId: "1:462538199019:web:9e8127f6ad1642d53393ae"
 };
 
+// inizializza Firebase
 firebase.initializeApp(firebaseConfig);
-
 const db = firebase.firestore();
 
 
@@ -20,7 +20,7 @@ const colleghi = ["Marco","Luca","Anna","Paolo","Giulia"];
 let ultimoDriver = null;
 
 
-// data di oggi
+// --- DATA DI OGGI ---
 function getToday(){
   return new Date().toISOString().split("T")[0];
 }
@@ -29,65 +29,82 @@ function getToday(){
 // --- CALCOLO GUIDATORE ---
 function calcolaGuidatore(){
 
-  const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
-  const presenti = Array.from(checkboxes).map(c => c.value);
+  const today = getToday();
 
-  if(presenti.length === 0){
-    document.getElementById("risultato").innerHTML =
-    "Seleziona almeno un collega";
-    return;
-  }
+  // controlla se esiste già un guidatore oggi
+  db.collection("carpool").doc(today).get()
+  .then(doc => {
 
-  db.collection("carpool")
-  .orderBy("timestamp","desc")
-  .limit(1)
-  .get()
+    if(doc.exists && doc.data().driver){
 
-  .then(snapshot => {
+      document.getElementById("risultato").innerHTML =
+      "🚗 Guidatore già deciso oggi: " + doc.data().driver;
 
-    if(!snapshot.empty){
-      snapshot.forEach(doc => {
-        ultimoDriver = doc.data().driver || null;
-      });
-    } else {
-      ultimoDriver = null;
+      return;
+
     }
 
-    let index = ultimoDriver ? colleghi.indexOf(ultimoDriver) : -1;
-    let driver = null;
+    const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
+    const presenti = Array.from(checkboxes).map(c => c.value);
 
-    for(let i=1;i<=colleghi.length;i++){
+    if(presenti.length === 0){
 
-      let prossimo = colleghi[(index+i)%colleghi.length];
+      document.getElementById("risultato").innerHTML =
+      "Seleziona almeno un collega";
 
-      if(presenti.includes(prossimo)){
-        driver = prossimo;
-        break;
+      return;
+
+    }
+
+    db.collection("carpool")
+    .orderBy("timestamp","desc")
+    .limit(1)
+    .get()
+    .then(snapshot => {
+
+      if(!snapshot.empty){
+        snapshot.forEach(doc => {
+          ultimoDriver = doc.data().driver || null;
+        });
+      } else {
+        ultimoDriver = null;
       }
 
-    }
+      let index = ultimoDriver ? colleghi.indexOf(ultimoDriver) : -1;
+      let driver = null;
 
-    if(driver){
+      for(let i=1;i<=colleghi.length;i++){
 
-      const today = getToday();
+        let prossimo = colleghi[(index+i)%colleghi.length];
 
-      db.collection("carpool").doc(today).set({
-        driver: driver,
-        presenti: presenti,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
+        if(presenti.includes(prossimo)){
+          driver = prossimo;
+          break;
+        }
 
-      document.getElementById("risultato").innerHTML =
-      "🚗 Guidatore di oggi: " + driver;
+      }
 
-      renderCalendario();
+      if(driver){
 
-    } else {
+        db.collection("carpool").doc(today).set({
+          driver: driver,
+          presenti: presenti,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-      document.getElementById("risultato").innerHTML =
-      "Nessun guidatore disponibile";
+        document.getElementById("risultato").innerHTML =
+        "🚗 Guidatore di oggi: " + driver;
 
-    }
+        renderCalendario();
+
+      } else {
+
+        document.getElementById("risultato").innerHTML =
+        "Nessun guidatore disponibile";
+
+      }
+
+    });
 
   });
 
@@ -106,9 +123,7 @@ function oggiNonVengo(){
   });
 
   document.getElementById("risultato").innerHTML =
-  "❌ Oggi non vieni";
-
-  renderCalendario();
+  "❌ Presenze aggiornate. Ricalcola il guidatore.";
 
 }
 
@@ -123,7 +138,6 @@ function renderCalendario(){
   .orderBy("timestamp","desc")
   .limit(14)
   .get()
-
   .then(snapshot => {
 
     calendario.innerHTML = "";
@@ -149,7 +163,7 @@ function renderCalendario(){
 }
 
 
-// --- UPDATE IN TEMPO REALE ---
+// --- AGGIORNAMENTO IN TEMPO REALE ---
 db.collection("carpool")
 .doc(getToday())
 .onSnapshot(doc => {
