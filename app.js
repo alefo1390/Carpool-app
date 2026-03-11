@@ -24,10 +24,18 @@ const colleghi = [
 ];
 
 
-// ---------------- DATA ----------------
+// ---------------- DATA CORRETTA (LOCALE) ----------------
 
 function getToday(){
-return new Date().toISOString().split("T")[0];
+
+const now = new Date();
+
+const year = now.getFullYear();
+const month = String(now.getMonth()+1).padStart(2,"0");
+const day = String(now.getDate()).padStart(2,"0");
+
+return `${year}-${month}-${day}`;
+
 }
 
 
@@ -318,9 +326,7 @@ const driver=info.driver || "—";
 let passeggeri=[];
 
 if(info.presenti){
-
 passeggeri=info.presenti.filter(p=>p!==driver);
-
 }
 
 calendario.innerHTML+=`
@@ -347,7 +353,5 @@ caricaGuidatoreOggi();
 // ---------------- SERVICE WORKER ----------------
 
 if("serviceWorker" in navigator){
-
 navigator.serviceWorker.register("service-worker.js");
-
 }
