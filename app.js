@@ -27,12 +27,10 @@ const sigle = {
 "Rosario":"R"
 };
 
-
-// ORDINE FISSO
 const ordineSigle = ["A","S","AN","F","R"];
 
 
-// ROTAZIONI DEFINITE DA VOI
+// ROTAZIONI
 const rotazioni = {
 
 "A":["Alessio"],
@@ -89,8 +87,8 @@ const chiave = ordineSigle
 .join("-");
 
 return {
-chiave: chiave,
-sequenza: rotazioni[chiave] || presenti
+chiave:chiave,
+sequenza:rotazioni[chiave] || presenti
 };
 
 }
@@ -104,47 +102,32 @@ const today = getToday();
 db.collection("carpool").doc(today).get().then(doc=>{
 
 if(doc.exists && doc.data().driver){
-
 alert("🚗 Guidatore già calcolato per oggi");
 return;
-
 }
 
-const checkboxes =
-document.querySelectorAll("input[type=checkbox]:checked");
-
 const presenti =
-Array.from(checkboxes).map(c=>c.value);
+Array.from(document.querySelectorAll("input[type=checkbox]:checked"))
+.map(c=>c.value);
 
 if(presenti.length===0){
-
-document.getElementById("risultato").innerHTML =
-"Seleziona almeno un collega";
+document.getElementById("risultato").innerHTML="Seleziona almeno un collega";
 return;
-
 }
 
 const {chiave,sequenza} = trovaRotazione(presenti);
 
 db.collection("rotazioni").doc(chiave).get().then(rdoc=>{
 
-let index = 0;
-
-if(rdoc.exists){
-index = rdoc.data().index || 0;
-}
+let index = rdoc.exists ? rdoc.data().index || 0 : 0;
 
 const driver = sequenza[index];
 
-const passeggeri =
-presenti.filter(p=>p!==driver);
+const passeggeri = presenti.filter(p=>p!==driver);
 
-const nextIndex =
-(index + 1) % sequenza.length;
+const nextIndex = (index+1)%sequenza.length;
 
-db.collection("rotazioni").doc(chiave).set({
-index:nextIndex
-});
+db.collection("rotazioni").doc(chiave).set({index:nextIndex});
 
 db.collection("carpool").doc(today).set({
 
@@ -156,11 +139,10 @@ timestamp:firebase.firestore.FieldValue.serverTimestamp()
 });
 
 document.getElementById("risultato").innerHTML =
-
 `🚗 Guidatore di oggi: ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ")}`;
 
-document.querySelector("button[onclick='calcolaGuidatore()']").disabled = true;
+document.querySelector("button[onclick='calcolaGuidatore()']").disabled=true;
 
 mostraRotazione(sequenza);
 
@@ -173,98 +155,95 @@ renderStorico();
 }
 
 
-// SIMULA DOMANI
-function simulaDomani(){
-
-const checkboxes =
-document.querySelectorAll("input[type=checkbox]:checked");
-
-const presenti =
-Array.from(checkboxes).map(c=>c.value);
-
-if(presenti.length===0) return;
-
-const {chiave,sequenza} = trovaRotazione(presenti);
-
-db.collection("rotazioni").doc(chiave).get().then(doc=>{
-
-let index = 0;
-
-if(doc.exists){
-index = doc.data().index || 0;
-}
-
-const driver = sequenza[index];
-
-const passeggeri =
-presenti.filter(p=>p!==driver);
-
-document.getElementById("risultato").innerHTML =
-
-`🔮 Domani guiderebbe: ${driver}<br>
-👥 Passeggeri: ${passeggeri.join(", ")}`;
-
-mostraRotazione(sequenza);
-
-});
-
-}
-
-
-// MOSTRA ROTAZIONE
+// MOSTRA ROTAZIONE ATTIVA
 function mostraRotazione(rotazione){
 
-let html = "<h3>🔁 Rotazione attiva</h3>";
+let html="<h3>🔁 Rotazione attiva</h3>";
 
 rotazione.forEach(nome=>{
-html += nome + "<br>";
+html+=nome+"<br>";
 });
 
-document.getElementById("rotazione").innerHTML = html;
+document.getElementById("rotazione").innerHTML=html;
 
 }
 
 
-// OGGI NON VENGO (VERSIONE CORRETTA)
+// TASTO ROTAZIONI
+function mostraTutteRotazioni(){
+
+const container=document.getElementById("rotazioniComplete");
+
+container.innerHTML="Caricamento...";
+
+db.collection("rotazioni").get().then(snapshot=>{
+
+container.innerHTML="";
+
+snapshot.forEach(doc=>{
+
+const chiave=doc.id;
+const index=doc.data().index || 0;
+
+const sequenza=rotazioni[chiave];
+
+if(!sequenza) return;
+
+let html="<div style='margin-bottom:15px'>";
+
+html+="<b>"+chiave+"</b><br>";
+
+sequenza.forEach((nome,i)=>{
+
+let icona="";
+
+if(i===index-1) icona=" 🚗";
+
+if(index===0 && i===sequenza.length-1) icona=" 🚗";
+
+html+=nome+icona+"<br>";
+
+});
+
+html+="</div>";
+
+container.innerHTML+=html;
+
+});
+
+});
+
+}
+
+
+// OGGI NON VENGO
 function oggiNonVengo(){
 
-const today = getToday();
+const today=getToday();
 
 db.collection("carpool").doc(today).get().then(doc=>{
 
 if(!doc.exists) return;
 
-const data = doc.data();
-const presenti = data.presenti || [];
+const presenti=doc.data().presenti;
 
-const {chiave,sequenza} = trovaRotazione(presenti);
+const {chiave,sequenza}=trovaRotazione(presenti);
 
 db.collection("rotazioni").doc(chiave).get().then(rdoc=>{
 
-let index = 0;
+let index=rdoc.exists ? rdoc.data().index || 0 : 0;
 
-if(rdoc.exists){
-index = rdoc.data().index || 0;
-}
+index--;
 
-// TORNA INDIETRO DI UNA POSIZIONE
-index = index - 1;
+if(index<0) index=sequenza.length-1;
 
-if(index < 0){
-index = sequenza.length - 1;
-}
+db.collection("rotazioni").doc(chiave).set({index:index});
 
-db.collection("rotazioni").doc(chiave).set({
-index:index
-});
-
-// CANCELLA GIORNO
 db.collection("carpool").doc(today).delete();
 
 document.querySelector("button[onclick='calcolaGuidatore()']").disabled=false;
 
-document.getElementById("risultato").innerHTML =
-"❌ Viaggio annullato";
+document.getElementById("risultato").innerHTML="❌ Viaggio annullato";
 
 renderStorico();
 
@@ -275,11 +254,10 @@ renderStorico();
 }
 
 
-// STORICO VIAGGI
+// STORICO
 function renderStorico(){
 
-const calendario =
-document.getElementById("calendario");
+const calendario=document.getElementById("calendario");
 
 calendario.innerHTML="Caricamento...";
 
@@ -296,8 +274,7 @@ snapshot.forEach(doc=>{
 const data=doc.id;
 const info=doc.data();
 
-const giorno=new Date(data)
-.toLocaleDateString('it-IT',{
+const giorno=new Date(data).toLocaleDateString('it-IT',{
 weekday:'short',
 day:'numeric',
 month:'numeric'
@@ -311,8 +288,7 @@ if(info.presenti){
 passeggeri=info.presenti.filter(p=>p!==driver);
 }
 
-calendario.innerHTML +=
-
+calendario.innerHTML+=
 `<div style="margin-bottom:10px">
 <b>${giorno}</b> — 🚗 ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ") || "—"}
@@ -325,7 +301,7 @@ calendario.innerHTML +=
 }
 
 
-// BLOCCO AUTOMATICO GUIDATORE
+// BLOCCO GUIDATORE
 db.collection("carpool")
 .doc(getToday())
 .get()
@@ -338,11 +314,10 @@ document.querySelector("button[onclick='calcolaGuidatore()']").disabled=true;
 });
 
 
+renderStorico();
+
+
 // SERVICE WORKER
 if("serviceWorker" in navigator){
 navigator.serviceWorker.register("service-worker.js");
 }
-
-
-// AVVIO APP
-renderStorico();
