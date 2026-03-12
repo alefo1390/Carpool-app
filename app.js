@@ -259,7 +259,7 @@ calendario.innerHTML = "Caricamento...";
 
 db.collection("carpool")
 .orderBy("timestamp","desc")
-.limit(30)
+.limit(100)
 .get()
 .then(snapshot=>{
 
