@@ -96,6 +96,38 @@ return rotazioni[chiave] || presenti;
 // CALCOLA GUIDATORE
 function calcolaGuidatore(){
 
+  function simulaDomani(){
+
+const checkboxes =
+document.querySelectorAll("input[type=checkbox]:checked");
+
+const presenti =
+Array.from(checkboxes).map(c=>c.value);
+
+if(presenti.length===0){
+
+document.getElementById("risultato").innerHTML=
+"Seleziona almeno un collega";
+
+return;
+
+}
+
+const rotazione = trovaRotazione(presenti);
+
+const driver = rotazione[0];
+
+const passeggeri = presenti.filter(p=>p!==driver);
+
+document.getElementById("risultato").innerHTML =
+
+`🔮 Domani guiderebbe: ${driver}<br>
+👥 Passeggeri: ${passeggeri.join(", ")}`;
+
+mostraRotazione(rotazione);
+
+}
+
 const today = getToday();
 
 db.collection("carpool").doc(today).get().then(doc=>{
