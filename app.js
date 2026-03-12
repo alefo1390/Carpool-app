@@ -11,7 +11,7 @@ const db = firebase.firestore();
 
 
 
-/* DATA CORRETTA */
+/* DATA */
 
 function getToday(){
 
@@ -163,6 +163,7 @@ await db.collection("carpool").doc(today).set({
 
 driver: driver,
 presenti: presenti,
+rotazione: rotazione,
 timestamp: firebase.firestore.FieldValue.serverTimestamp()
 
 });
@@ -222,9 +223,7 @@ function mostraRotazione(rotazione){
 let html = "<h3>🔁 Rotazione attiva</h3>";
 
 rotazione.forEach(n=>{
-
 html += n + "<br>";
-
 });
 
 document.getElementById("rotazione").innerHTML = html;
@@ -268,9 +267,7 @@ calendario.innerHTML = "";
 snapshot.forEach(doc=>{
 
 const data = doc.id;
-
 const info = doc.data();
-
 const driver = info.driver;
 
 const passeggeri = info.presenti.filter(p=>p!==driver);
@@ -308,23 +305,23 @@ let html = `
 
 const snapshot = await db.collection("carpool")
 .orderBy("timestamp","desc")
-.limit(50)
+.limit(100)
 .get();
 
 let storico = [];
 
 snapshot.forEach(doc=>{
-storico.push(doc.data().driver);
+storico.push(doc.data());
 });
 
 Object.entries(rotazioni).forEach(([gruppo, sequenza])=>{
 
 let ultimo = "-";
 
-for(let driver of storico){
+for(let viaggio of storico){
 
-if(sequenza.includes(driver)){
-ultimo = driver;
+if(JSON.stringify(viaggio.rotazione) === JSON.stringify(sequenza)){
+ultimo = viaggio.driver;
 break;
 }
 
@@ -365,6 +362,6 @@ document.getElementById("dashboardPopup").style.display = "none";
 
 
 
-/* AVVIO */
+/* AVVIO APP */
 
 renderStorico();
