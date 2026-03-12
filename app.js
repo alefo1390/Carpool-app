@@ -29,7 +29,7 @@ const sigle = {
 };
 
 
-// ROTAZIONI (ordine definito da voi)
+// ROTAZIONI
 const rotazioni = {
 
 "A":["Alessio"],
@@ -90,15 +90,18 @@ return rotazioni[chiave] || presenti;
 
 
 // PROSSIMO GUIDATORE
-function prossimoGuidatore(rotazione, driverPrecedente){
+function prossimoGuidatore(rotazione,driverPrecedente){
 
-if(!driverPrecedente) return rotazione[0];
+if(driverPrecedente && rotazione.includes(driverPrecedente)){
 
 const index = rotazione.indexOf(driverPrecedente);
-
-if(index === -1) return rotazione[0];
-
 return rotazione[(index+1)%rotazione.length];
+
+}else{
+
+return rotazione[0];
+
+}
 
 }
 
@@ -110,11 +113,9 @@ const today = getToday();
 
 db.collection("carpool").doc(today).get().then(doc=>{
 
-// BLOCCO SE GIÀ CALCOLATO
 if(doc.exists && doc.data().driver){
 
 alert("🚗 Guidatore già calcolato per oggi");
-
 return;
 
 }
@@ -129,7 +130,6 @@ if(presenti.length===0){
 
 document.getElementById("risultato").innerHTML =
 "Seleziona almeno un collega";
-
 return;
 
 }
@@ -148,7 +148,8 @@ snapshot.forEach(d=>{
 driverPrecedente = d.data().driver;
 });
 
-const driver = prossimoGuidatore(rotazione,driverPrecedente);
+const driver =
+prossimoGuidatore(rotazione,driverPrecedente);
 
 const passeggeri =
 presenti.filter(p=>p!==driver);
@@ -192,7 +193,6 @@ if(presenti.length===0){
 
 document.getElementById("risultato").innerHTML =
 "Seleziona almeno un collega";
-
 return;
 
 }
@@ -211,7 +211,8 @@ snapshot.forEach(d=>{
 driverPrecedente = d.data().driver;
 });
 
-const driver = prossimoGuidatore(rotazione,driverPrecedente);
+const driver =
+prossimoGuidatore(rotazione,driverPrecedente);
 
 const passeggeri =
 presenti.filter(p=>p!==driver);
@@ -231,13 +232,13 @@ mostraRotazione(rotazione);
 // MOSTRA ROTAZIONE
 function mostraRotazione(rotazione){
 
-let html = "<h3>🔁 Rotazione attiva</h3>";
+let html="<h3>🔁 Rotazione attiva</h3>";
 
 rotazione.forEach(nome=>{
-html += nome+"<br>";
+html+=nome+"<br>";
 });
 
-document.getElementById("rotazione").innerHTML = html;
+document.getElementById("rotazione").innerHTML=html;
 
 }
 
@@ -245,13 +246,13 @@ document.getElementById("rotazione").innerHTML = html;
 // OGGI NON VENGO
 function oggiNonVengo(){
 
-const today = getToday();
+const today=getToday();
 
 db.collection("carpool").doc(today).delete();
 
-document.querySelector("button[onclick='calcolaGuidatore()']").disabled = false;
+document.querySelector("button[onclick='calcolaGuidatore()']").disabled=false;
 
-document.getElementById("risultato").innerHTML =
+document.getElementById("risultato").innerHTML=
 "❌ Guidatore sbloccato";
 
 renderStorico();
@@ -259,11 +260,10 @@ renderStorico();
 }
 
 
-// STORICO VIAGGI
+// STORICO
 function renderStorico(){
 
-const calendario =
-document.getElementById("calendario");
+const calendario=document.getElementById("calendario");
 
 calendario.innerHTML="Caricamento...";
 
@@ -277,30 +277,29 @@ calendario.innerHTML="";
 
 snapshot.forEach(doc=>{
 
-const data = doc.id;
-const info = doc.data();
+const data=doc.id;
+const info=doc.data();
 
-const giorno =
-new Date(data)
+const giorno=new Date(data)
 .toLocaleDateString('it-IT',{
 weekday:'short',
 day:'numeric',
 month:'numeric'
 });
 
-const driver = info.driver || "—";
+const driver=info.driver||"—";
 
 let passeggeri=[];
 
 if(info.presenti){
-passeggeri = info.presenti.filter(p=>p!==driver);
+passeggeri=info.presenti.filter(p=>p!==driver);
 }
 
-calendario.innerHTML +=
+calendario.innerHTML+=
 
 `<div style="margin-bottom:10px">
 <b>${giorno}</b> — 🚗 ${driver}<br>
-👥 Passeggeri: ${passeggeri.join(", ") || "—"}
+👥 Passeggeri: ${passeggeri.join(", ")||"—"}
 </div>`;
 
 });
@@ -310,16 +309,14 @@ calendario.innerHTML +=
 }
 
 
-// BLOCCO AUTOMATICO SE GUIDATORE GIÀ CALCOLATO
+// BLOCCO AUTOMATICO
 db.collection("carpool")
 .doc(getToday())
 .get()
 .then(doc=>{
 
 if(doc.exists && doc.data().driver){
-
-document.querySelector("button[onclick='calcolaGuidatore()']").disabled = true;
-
+document.querySelector("button[onclick='calcolaGuidatore()']").disabled=true;
 }
 
 });
@@ -331,5 +328,5 @@ navigator.serviceWorker.register("service-worker.js");
 }
 
 
-// CARICA STORICO
+// AVVIO
 renderStorico();
