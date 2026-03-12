@@ -1,61 +1,60 @@
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Carpool Colleghi</title>
+<title>Carpool</title>
 
-<link rel="stylesheet" href="style.css">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
 <link rel="manifest" href="manifest.json">
-
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
 </head>
 
 <body>
 
-<h1>🚗 Carpool Colleghi</h1>
+<h2>🚗 Carpool</h2>
 
-<h2>Seleziona chi è presente oggi</h2>
+<h3>Presenze</h3>
 
-<div id="colleghi">
-
-<label><input type="checkbox" value="Alessio"> Alessio</label>
-<label><input type="checkbox" value="Sebastiano"> Sebastiano</label>
-<label><input type="checkbox" value="Andrea"> Andrea</label>
-<label><input type="checkbox" value="Francesca"> Francesca</label>
-<label><input type="checkbox" value="Rosario"> Rosario</label>
-
-</div>
-
-
-<br>
+<label><input type="checkbox" value="Alessio"> Alessio</label><br>
+<label><input type="checkbox" value="Sebastiano"> Sebastiano</label><br>
+<label><input type="checkbox" value="Andrea"> Andrea</label><br>
+<label><input type="checkbox" value="Francesca"> Francesca</label><br>
+<label><input type="checkbox" value="Rosario"> Rosario</label><br><br>
 
 <button onclick="calcolaGuidatore()">🚗 Calcola guidatore</button>
 
-<button onclick="oggiNonVengo()">❌ Oggi non vengo</button>
-
 <button onclick="simulaDomani()">🔮 Simula domani</button>
 
+<button onclick="oggiNonVengo()">❌ Oggi non vengo</button>
 
-<h2 id="risultato">🚗 Guidatore di oggi: —</h2>
+<button onclick="mostraTutteRotazioni()">🔁 Rotazioni</button>
 
+<hr>
+
+<div id="risultato"></div>
+
+<br>
 
 <div id="rotazione"></div>
 
+<hr>
 
-<h2>📅 Storico viaggi</h2>
+<h3>🔁 Rotazioni attive</h3>
+
+<div id="rotazioniComplete"></div>
+
+<hr>
+
+<h3>📅 Storico viaggi</h3>
 
 <div id="calendario"></div>
-
 
 <script src="app.js"></script>
 
 </body>
-
 </html>
