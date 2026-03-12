@@ -1,16 +1,17 @@
 const firebaseConfig = {
 
-apiKey:"AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
-authDomain:"carpool-app-3e8d5.firebaseapp.com",
-projectId:"carpool-app-3e8d5"
+apiKey: "AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
+authDomain: "carpool-app-3e8d5.firebaseapp.com",
+projectId: "carpool-app-3e8d5"
 
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const db = firebase.firestore();
 
 
+
+/* DATA CORRETTA */
 
 function getToday(){
 
@@ -26,7 +27,9 @@ return `${year}-${month}-${day}`;
 
 
 
-const sigle={
+/* SIGLE */
+
+const sigle = {
 
 "Alessio":"A",
 "Sebastiano":"S",
@@ -38,7 +41,15 @@ const sigle={
 
 
 
-const rotazioni={
+/* ROTAZIONI */
+
+const rotazioni = {
+
+"A":["Alessio"],
+"S":["Sebastiano"],
+"AN":["Andrea"],
+"F":["Francesca"],
+"R":["Rosario"],
 
 "A-S":["Sebastiano","Alessio"],
 "A-AN":["Alessio","Andrea"],
@@ -79,11 +90,12 @@ const rotazioni={
 
 
 
+/* TROVA ROTAZIONE */
+
 function trovaRotazione(presenti){
 
-const chiave=
-
-presenti.map(n=>sigle[n])
+const chiave = presenti
+.map(n=>sigle[n])
 .sort()
 .join("-");
 
@@ -93,62 +105,71 @@ return rotazioni[chiave] || presenti;
 
 
 
-function prossimoGuidatore(rotazione,precedente){
+/* PROSSIMO GUIDATORE */
+
+function prossimoGuidatore(rotazione, precedente){
 
 if(!precedente) return rotazione[0];
 
-const index=rotazione.indexOf(precedente);
+const index = rotazione.indexOf(precedente);
 
-return rotazione[(index+1)%rotazione.length];
+return rotazione[(index+1) % rotazione.length];
 
 }
 
 
 
-function calcolaGuidatore(){
+/* CALCOLA GUIDATORE */
 
-const today=getToday();
+async function calcolaGuidatore(){
 
-db.collection("carpool").doc(today).get().then(doc=>{
+const today = getToday();
+
+const doc = await db.collection("carpool").doc(today).get();
 
 if(doc.exists){
 
-alert("Guidatore già calcolato");
-
+alert("Guidatore già calcolato oggi");
 return;
 
 }
 
-const presenti=[...document.querySelectorAll("input:checked")]
+const presenti = [...document.querySelectorAll("input:checked")]
 .map(c=>c.value);
 
-if(presenti.length===0) return;
+if(presenti.length === 0){
 
-const rotazione=trovaRotazione(presenti);
+alert("Seleziona almeno una persona");
+return;
 
-db.collection("carpool")
+}
+
+const rotazione = trovaRotazione(presenti);
+
+const last = await db.collection("carpool")
 .orderBy("timestamp","desc")
 .limit(1)
-.get()
-.then(s=>{
+.get();
 
-let precedente=null;
+let precedente = null;
 
-s.forEach(d=>precedente=d.data().driver);
+last.forEach(d=>{
+precedente = d.data().driver;
+});
 
-const driver=prossimoGuidatore(rotazione,precedente);
+const driver = prossimoGuidatore(rotazione, precedente);
 
-const passeggeri=presenti.filter(p=>p!==driver);
+await db.collection("carpool").doc(today).set({
 
-db.collection("carpool").doc(today).set({
-
-driver,
-presenti,
-timestamp:firebase.firestore.FieldValue.serverTimestamp()
+driver: driver,
+presenti: presenti,
+timestamp: firebase.firestore.FieldValue.serverTimestamp()
 
 });
 
-document.getElementById("risultato").innerHTML=
+const passeggeri = presenti.filter(p=>p!==driver);
+
+document.getElementById("risultato").innerHTML =
 
 `🚗 Guidatore: ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ")}`;
@@ -157,69 +178,70 @@ mostraRotazione(rotazione);
 
 renderStorico();
 
-});
-
-});
-
 }
 
 
 
-function simulaDomani(){
+/* SIMULA DOMANI */
 
-const presenti=[...document.querySelectorAll("input:checked")]
+async function simulaDomani(){
+
+const presenti = [...document.querySelectorAll("input:checked")]
 .map(c=>c.value);
 
-const rotazione=trovaRotazione(presenti);
+const rotazione = trovaRotazione(presenti);
 
-db.collection("carpool")
+const last = await db.collection("carpool")
 .orderBy("timestamp","desc")
 .limit(1)
-.get()
-.then(s=>{
+.get();
 
-let precedente=null;
+let precedente = null;
 
-s.forEach(d=>precedente=d.data().driver);
+last.forEach(d=>{
+precedente = d.data().driver;
+});
 
-const driver=prossimoGuidatore(rotazione,precedente);
+const driver = prossimoGuidatore(rotazione, precedente);
 
-const passeggeri=presenti.filter(p=>p!==driver);
+const passeggeri = presenti.filter(p=>p!==driver);
 
-document.getElementById("risultato").innerHTML=
+document.getElementById("risultato").innerHTML =
 
 `🔮 Domani guiderebbe: ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ")}`;
 
-});
-
 }
 
 
+
+/* MOSTRA ROTAZIONE */
 
 function mostraRotazione(rotazione){
 
-let html="<h3>🔁 Rotazione attiva</h3>";
+let html = "<h3>🔁 Rotazione attiva</h3>";
 
 rotazione.forEach(n=>{
 
-html+=n+"<br>";
+html += n + "<br>";
 
 });
 
-document.getElementById("rotazione").innerHTML=html;
+document.getElementById("rotazione").innerHTML = html;
 
 }
 
 
 
+/* OGGI NON VENGO */
+
 function oggiNonVengo(){
 
-const today=getToday();
+const today = getToday();
 
 db.collection("carpool").doc(today).delete();
 
-document.getElementById("risultato").innerHTML="Viaggio annullato";
+document.getElementById("risultato").innerHTML = "Viaggio annullato";
 
 renderStorico();
 
@@ -227,11 +249,13 @@ renderStorico();
 
 
 
+/* STORICO */
+
 function renderStorico(){
 
-const calendario=document.getElementById("calendario");
+const calendario = document.getElementById("calendario");
 
-calendario.innerHTML="Caricamento...";
+calendario.innerHTML = "Caricamento...";
 
 db.collection("carpool")
 .orderBy("timestamp","desc")
@@ -239,26 +263,22 @@ db.collection("carpool")
 .get()
 .then(snapshot=>{
 
-calendario.innerHTML="";
+calendario.innerHTML = "";
 
 snapshot.forEach(doc=>{
 
-const data=doc.id;
+const data = doc.id;
 
-const info=doc.data();
+const info = doc.data();
 
-const driver=info.driver;
+const driver = info.driver;
 
-const passeggeri=info.presenti.filter(p=>p!==driver);
+const passeggeri = info.presenti.filter(p=>p!==driver);
 
-calendario.innerHTML+=`
+calendario.innerHTML +=
 
-<b>${data}</b> — 🚗 ${driver}<br>
-👥 Passeggeri: ${passeggeri.join(", ")}
-
-<br><br>
-
-`;
+`<b>${data}</b> — 🚗 ${driver}<br>
+👥 Passeggeri: ${passeggeri.join(", ")}<br><br>`;
 
 });
 
@@ -270,21 +290,57 @@ calendario.innerHTML+=`
 
 /* DASHBOARD */
 
-function apriDashboard(){
+async function apriDashboard(){
 
-const popup=document.getElementById("dashboardPopup");
+const popup = document.getElementById("dashboardPopup");
+const container = document.getElementById("dashboardContent");
 
-popup.style.display="flex";
+popup.style.display = "flex";
 
-let html="";
+let html = `
+<table style="width:100%;border-collapse:collapse">
+<tr>
+<th style="text-align:left">Rotazione</th>
+<th style="text-align:left">Ultimo 🚗</th>
+<th style="text-align:left">Prossimo</th>
+</tr>
+`;
 
-Object.keys(rotazioni).forEach(r=>{
+const snapshot = await db.collection("carpool")
+.orderBy("timestamp","desc")
+.limit(1)
+.get();
 
-html+=`<b>${r}</b><br>${rotazioni[r].join(" → ")}<br><br>`;
+let ultimoDriver = null;
+
+snapshot.forEach(doc=>{
+ultimoDriver = doc.data().driver;
+});
+
+Object.entries(rotazioni).forEach(([gruppo, sequenza])=>{
+
+let prossimo = sequenza[0];
+
+if(ultimoDriver && sequenza.includes(ultimoDriver)){
+
+const index = sequenza.indexOf(ultimoDriver);
+prossimo = sequenza[(index+1)%sequenza.length];
+
+}
+
+html += `
+<tr>
+<td>${gruppo}</td>
+<td>${ultimoDriver || "-"}</td>
+<td>${prossimo}</td>
+</tr>
+`;
 
 });
 
-document.getElementById("dashboardContent").innerHTML=html;
+html += "</table>";
+
+container.innerHTML = html;
 
 }
 
@@ -292,10 +348,12 @@ document.getElementById("dashboardContent").innerHTML=html;
 
 function chiudiDashboard(){
 
-document.getElementById("dashboardPopup").style.display="none";
+document.getElementById("dashboardPopup").style.display = "none";
 
 }
 
 
+
+/* AVVIO */
 
 renderStorico();
