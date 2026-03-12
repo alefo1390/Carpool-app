@@ -102,8 +102,10 @@ const today = getToday();
 db.collection("carpool").doc(today).get().then(doc=>{
 
 if(doc.exists && doc.data().driver){
+
 alert("🚗 Guidatore già calcolato per oggi");
 return;
+
 }
 
 const presenti =
@@ -111,8 +113,12 @@ Array.from(document.querySelectorAll("input[type=checkbox]:checked"))
 .map(c=>c.value);
 
 if(presenti.length===0){
-document.getElementById("risultato").innerHTML="Seleziona almeno un collega";
+
+document.getElementById("risultato").innerHTML =
+"Seleziona almeno un collega";
+
 return;
+
 }
 
 const {chiave,sequenza} = trovaRotazione(presenti);
@@ -123,11 +129,15 @@ let index = rdoc.exists ? rdoc.data().index || 0 : 0;
 
 const driver = sequenza[index];
 
-const passeggeri = presenti.filter(p=>p!==driver);
+const passeggeri =
+presenti.filter(p=>p!==driver);
 
-const nextIndex = (index+1)%sequenza.length;
+const nextIndex =
+(index+1)%sequenza.length;
 
-db.collection("rotazioni").doc(chiave).set({index:nextIndex});
+db.collection("rotazioni").doc(chiave).set({
+index:nextIndex
+});
 
 db.collection("carpool").doc(today).set({
 
@@ -139,6 +149,7 @@ timestamp:firebase.firestore.FieldValue.serverTimestamp()
 });
 
 document.getElementById("risultato").innerHTML =
+
 `🚗 Guidatore di oggi: ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ")}`;
 
@@ -158,56 +169,69 @@ renderStorico();
 // MOSTRA ROTAZIONE ATTIVA
 function mostraRotazione(rotazione){
 
-let html="<h3>🔁 Rotazione attiva</h3>";
+let html = "<h3>🔁 Rotazione attiva</h3>";
 
 rotazione.forEach(nome=>{
-html+=nome+"<br>";
+html += nome + "<br>";
 });
 
-document.getElementById("rotazione").innerHTML=html;
+document.getElementById("rotazione").innerHTML = html;
 
 }
 
 
-// TASTO ROTAZIONI
+// DASHBOARD ROTAZIONI
 function mostraTutteRotazioni(){
 
-const container=document.getElementById("rotazioniComplete");
+const container =
+document.getElementById("rotazioniComplete");
 
-container.innerHTML="Caricamento...";
+container.innerHTML = "Caricamento dashboard...";
 
-db.collection("rotazioni").get().then(snapshot=>{
+let html = `
+<table style="width:100%;border-collapse:collapse">
 
-container.innerHTML="";
+<tr style="border-bottom:1px solid #ccc">
+<th style="text-align:left">Rotazione</th>
+<th style="text-align:left">Ultimo 🚗</th>
+<th style="text-align:left">Prossimo</th>
+</tr>
+`;
 
-snapshot.forEach(doc=>{
+Object.keys(rotazioni).forEach(chiave=>{
 
-const chiave=doc.id;
-const index=doc.data().index || 0;
+const sequenza = rotazioni[chiave];
 
-const sequenza=rotazioni[chiave];
+db.collection("rotazioni").doc(chiave).get().then(doc=>{
 
-if(!sequenza) return;
+let index = 0;
 
-let html="<div style='margin-bottom:15px'>";
+if(doc.exists){
+index = doc.data().index || 0;
+}
 
-html+="<b>"+chiave+"</b><br>";
+let ultimo =
+sequenza[index-1];
 
-sequenza.forEach((nome,i)=>{
+if(index===0){
+ultimo = sequenza[sequenza.length-1];
+}
 
-let icona="";
+let prossimo =
+sequenza[index];
 
-if(i===index-1) icona=" 🚗";
+html += `
+<tr style="border-bottom:1px solid #eee">
 
-if(index===0 && i===sequenza.length-1) icona=" 🚗";
+<td>${chiave}</td>
+<td>${ultimo}</td>
+<td>${prossimo}</td>
 
-html+=nome+icona+"<br>";
+</tr>
+`;
 
-});
-
-html+="</div>";
-
-container.innerHTML+=html;
+container.innerHTML =
+html + "</table>";
 
 });
 
@@ -219,31 +243,35 @@ container.innerHTML+=html;
 // OGGI NON VENGO
 function oggiNonVengo(){
 
-const today=getToday();
+const today = getToday();
 
 db.collection("carpool").doc(today).get().then(doc=>{
 
 if(!doc.exists) return;
 
-const presenti=doc.data().presenti;
+const presenti = doc.data().presenti;
 
-const {chiave,sequenza}=trovaRotazione(presenti);
+const {chiave,sequenza} =
+trovaRotazione(presenti);
 
 db.collection("rotazioni").doc(chiave).get().then(rdoc=>{
 
-let index=rdoc.exists ? rdoc.data().index || 0 : 0;
+let index = rdoc.exists ? rdoc.data().index || 0 : 0;
 
 index--;
 
-if(index<0) index=sequenza.length-1;
+if(index<0) index = sequenza.length-1;
 
-db.collection("rotazioni").doc(chiave).set({index:index});
+db.collection("rotazioni").doc(chiave).set({
+index:index
+});
 
 db.collection("carpool").doc(today).delete();
 
 document.querySelector("button[onclick='calcolaGuidatore()']").disabled=false;
 
-document.getElementById("risultato").innerHTML="❌ Viaggio annullato";
+document.getElementById("risultato").innerHTML =
+"❌ Viaggio annullato";
 
 renderStorico();
 
@@ -257,7 +285,8 @@ renderStorico();
 // STORICO
 function renderStorico(){
 
-const calendario=document.getElementById("calendario");
+const calendario =
+document.getElementById("calendario");
 
 calendario.innerHTML="Caricamento...";
 
@@ -271,24 +300,28 @@ calendario.innerHTML="";
 
 snapshot.forEach(doc=>{
 
-const data=doc.id;
-const info=doc.data();
+const data = doc.id;
+const info = doc.data();
 
-const giorno=new Date(data).toLocaleDateString('it-IT',{
+const giorno =
+new Date(data)
+.toLocaleDateString('it-IT',{
 weekday:'short',
 day:'numeric',
 month:'numeric'
 });
 
-const driver=info.driver || "—";
+const driver = info.driver || "—";
 
 let passeggeri=[];
 
 if(info.presenti){
-passeggeri=info.presenti.filter(p=>p!==driver);
+passeggeri =
+info.presenti.filter(p=>p!==driver);
 }
 
-calendario.innerHTML+=
+calendario.innerHTML +=
+
 `<div style="margin-bottom:10px">
 <b>${giorno}</b> — 🚗 ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ") || "—"}
