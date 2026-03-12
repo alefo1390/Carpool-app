@@ -12,14 +12,14 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 
-// DATA OGGI
+// DATA
 function getToday(){
 const d = new Date();
 return d.toISOString().split("T")[0];
 }
 
 
-// SIGLE NOMI
+// SIGLE
 const sigle = {
 "Alessio":"A",
 "Sebastiano":"S",
@@ -84,24 +84,10 @@ const chiave = presenti
 .sort()
 .join("-");
 
-return rotazioni[chiave] || presenti;
-
-}
-
-
-// PROSSIMO GUIDATORE
-function prossimoGuidatore(rotazione,driverPrecedente){
-
-if(driverPrecedente && rotazione.includes(driverPrecedente)){
-
-const index = rotazione.indexOf(driverPrecedente);
-return rotazione[(index+1)%rotazione.length];
-
-}else{
-
-return rotazione[0];
-
-}
+return {
+chiave:chiave,
+sequenza:rotazioni[chiave] || presenti
+};
 
 }
 
@@ -134,25 +120,27 @@ return;
 
 }
 
-const rotazione = trovaRotazione(presenti);
+const {chiave,sequenza} = trovaRotazione(presenti);
 
-db.collection("carpool")
-.orderBy("timestamp","desc")
-.limit(1)
-.get()
-.then(snapshot=>{
+db.collection("rotazioni").doc(chiave).get().then(doc=>{
 
-let driverPrecedente = null;
+let index = 0;
 
-snapshot.forEach(d=>{
-driverPrecedente = d.data().driver;
-});
+if(doc.exists){
+index = doc.data().index || 0;
+}
 
-const driver =
-prossimoGuidatore(rotazione,driverPrecedente);
+const driver = sequenza[index];
 
 const passeggeri =
 presenti.filter(p=>p!==driver);
+
+const nextIndex =
+(index + 1) % sequenza.length;
+
+db.collection("rotazioni").doc(chiave).set({
+index:nextIndex
+});
 
 db.collection("carpool").doc(today).set({
 
@@ -169,7 +157,7 @@ document.getElementById("risultato").innerHTML =
 
 document.querySelector("button[onclick='calcolaGuidatore()']").disabled = true;
 
-mostraRotazione(rotazione);
+mostraRotazione(sequenza);
 
 renderStorico();
 
@@ -190,29 +178,20 @@ const presenti =
 Array.from(checkboxes).map(c=>c.value);
 
 if(presenti.length===0){
-
-document.getElementById("risultato").innerHTML =
-"Seleziona almeno un collega";
 return;
-
 }
 
-const rotazione = trovaRotazione(presenti);
+const {chiave,sequenza} = trovaRotazione(presenti);
 
-db.collection("carpool")
-.orderBy("timestamp","desc")
-.limit(1)
-.get()
-.then(snapshot=>{
+db.collection("rotazioni").doc(chiave).get().then(doc=>{
 
-let driverPrecedente = null;
+let index = 0;
 
-snapshot.forEach(d=>{
-driverPrecedente = d.data().driver;
-});
+if(doc.exists){
+index = doc.data().index || 0;
+}
 
-const driver =
-prossimoGuidatore(rotazione,driverPrecedente);
+const driver = sequenza[index];
 
 const passeggeri =
 presenti.filter(p=>p!==driver);
@@ -222,7 +201,7 @@ document.getElementById("risultato").innerHTML =
 `🔮 Domani guiderebbe: ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ")}`;
 
-mostraRotazione(rotazione);
+mostraRotazione(sequenza);
 
 });
 
@@ -322,11 +301,9 @@ document.querySelector("button[onclick='calcolaGuidatore()']").disabled=true;
 });
 
 
-// SERVICE WORKER
 if("serviceWorker" in navigator){
 navigator.serviceWorker.register("service-worker.js");
 }
 
 
-// AVVIO
 renderStorico();
