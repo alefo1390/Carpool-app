@@ -33,7 +33,7 @@
 
 <button onclick="oggiNonVengo()">❌ Oggi non vengo</button>
 
-<button onclick="mostraTutteRotazioni()">📊 Dashboard</button>
+<button onclick="apriDashboard()">📊 Dashboard</button>
 
 <hr>
 
@@ -45,15 +45,45 @@
 
 <hr>
 
+<h3>📅 Storico viaggi</h3>
+
+<div id="calendario"></div>
+
+<!-- POPUP DASHBOARD -->
+
+<div id="dashboardPopup" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+z-index:1000;
+">
+
+<div style="
+background:white;
+margin:40px auto;
+padding:20px;
+width:90%;
+max-width:500px;
+border-radius:10px;
+max-height:80%;
+overflow:auto;
+">
+
 <h3>📊 Dashboard rotazioni</h3>
 
 <div id="rotazioniComplete"></div>
 
-<hr>
+<br>
 
-<h3>📅 Storico viaggi</h3>
+<button onclick="chiudiDashboard()">✖ Chiudi</button>
 
-<div id="calendario"></div>
+</div>
+
+</div>
 
 <script src="app.js"></script>
 
