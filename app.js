@@ -116,11 +116,16 @@ function calcolaGuidatore(){
 
 const today = getToday();
 
-const checkboxes =
-document.querySelectorAll("input[type=checkbox]:checked");
+db.collection("carpool").doc(today).get().then(doc=>{
 
-const presenti =
-Array.from(checkboxes).map(c=>c.value);
+// BLOCCO SE GUIDATORE ESISTE
+if(doc.exists && doc.data().driver){
+
+alert("🚗 Guidatore già calcolato per oggi");
+
+return;
+
+}
 
 if(presenti.length===0){
 
