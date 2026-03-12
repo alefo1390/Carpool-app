@@ -308,30 +308,41 @@ let html = `
 
 const snapshot = await db.collection("carpool")
 .orderBy("timestamp","desc")
-.limit(1)
+.limit(50)
 .get();
 
-let ultimoDriver = null;
+let storico = [];
 
 snapshot.forEach(doc=>{
-ultimoDriver = doc.data().driver;
+storico.push(doc.data().driver);
 });
 
 Object.entries(rotazioni).forEach(([gruppo, sequenza])=>{
 
+let ultimo = "-";
+
+for(let driver of storico){
+
+if(sequenza.includes(driver)){
+ultimo = driver;
+break;
+}
+
+}
+
 let prossimo = sequenza[0];
 
-if(ultimoDriver && sequenza.includes(ultimoDriver)){
+if(ultimo !== "-"){
 
-const index = sequenza.indexOf(ultimoDriver);
-prossimo = sequenza[(index+1)%sequenza.length];
+const index = sequenza.indexOf(ultimo);
+prossimo = sequenza[(index+1) % sequenza.length];
 
 }
 
 html += `
 <tr>
 <td>${gruppo}</td>
-<td>${ultimoDriver || "-"}</td>
+<td>${ultimo}</td>
 <td>${prossimo}</td>
 </tr>
 `;
