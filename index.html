@@ -1,89 +1,71 @@
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>🚗 Carpool</title>
+<title>Carpool</title>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<link rel="stylesheet" href="style.css">
 
-<link rel="manifest" href="manifest.json">
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 </head>
 
 <body>
 
-<h2>🚗 Carpool</h2>
+<h1>🚗 Carpool</h1>
 
-<h3>Presenze</h3>
+<h2>Presenze</h2>
 
 <label><input type="checkbox" value="Alessio"> Alessio</label><br>
 <label><input type="checkbox" value="Sebastiano"> Sebastiano</label><br>
 <label><input type="checkbox" value="Andrea"> Andrea</label><br>
 <label><input type="checkbox" value="Francesca"> Francesca</label><br>
-<label><input type="checkbox" value="Rosario"> Rosario</label><br><br>
+<label><input type="checkbox" value="Rosario"> Rosario</label>
+
+<br><br>
 
 <button onclick="calcolaGuidatore()">🚗 Calcola guidatore</button>
-
 <button onclick="simulaDomani()">🔮 Simula domani</button>
-
 <button onclick="oggiNonVengo()">❌ Oggi non vengo</button>
-
 <button onclick="apriDashboard()">📊 Dashboard</button>
 
 <hr>
 
 <div id="risultato"></div>
 
-<br>
+<hr>
 
 <div id="rotazione"></div>
 
 <hr>
 
-<h3>📅 Storico viaggi</h3>
+<h2>📅 Storico viaggi</h2>
 
 <div id="calendario"></div>
 
+
 <!-- POPUP DASHBOARD -->
 
-<div id="dashboardPopup" style="
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.6);
-z-index:1000;
-">
+<div id="dashboardPopup" class="popup">
 
-<div style="
-background:white;
-margin:40px auto;
-padding:20px;
-width:90%;
-max-width:500px;
-border-radius:10px;
-max-height:80%;
-overflow:auto;
-">
+<div class="popup-content">
 
-<h3>📊 Dashboard rotazioni</h3>
+<h2>📊 Dashboard rotazioni</h2>
 
-<div id="rotazioniComplete"></div>
+<div id="dashboardContent"></div>
 
 <br>
 
-<button onclick="chiudiDashboard()">✖ Chiudi</button>
+<button onclick="chiudiDashboard()">Chiudi</button>
 
 </div>
 
 </div>
+
 
 <script src="app.js"></script>
 
