@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>🚗 Carpool</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
 <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
@@ -31,7 +39,6 @@
 
 <button onclick="apriDashboard()">📊 Dashboard</button>
 
-
 <div id="risultato"></div>
 
 <h2>🔁 Rotazione attiva</h2>
@@ -40,7 +47,9 @@
 <hr>
 
 <h2>📅 Storico viaggi</h2>
-<div id="storico"></div>
+<div id="calendario"></div>
+
+<div id="dashboardPopup" class="popup"></div>
 
 <script src="app.js"></script>
 
