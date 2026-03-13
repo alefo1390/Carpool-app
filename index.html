@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Carpool</title>
-
-<link rel="stylesheet" href="style.css">
+<title>🚗 Carpool</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+<link rel="stylesheet" href="style.css">
 
 </head>
 
@@ -24,16 +25,12 @@
 <label><input type="checkbox" value="Sebastiano"> Sebastiano</label><br>
 <label><input type="checkbox" value="Andrea"> Andrea</label><br>
 <label><input type="checkbox" value="Francesca"> Francesca</label><br>
-<label><input type="checkbox" value="Rosario"> Rosario</label>
-
-<br><br>
+<label><input type="checkbox" value="Rosario"> Rosario</label><br><br>
 
 <button onclick="calcolaGuidatore()">🚗 Calcola guidatore</button>
 <button onclick="simulaDomani()">🔮 Simula domani</button>
 <button onclick="oggiNonVengo()">❌ Oggi non vengo</button>
 <button onclick="apriDashboard()">📊 Dashboard</button>
-
-<hr>
 
 <div id="risultato"></div>
 
@@ -47,25 +44,9 @@
 
 <div id="calendario"></div>
 
+<!-- POPUP -->
 
-<!-- POPUP DASHBOARD -->
-
-<div id="dashboardPopup" class="popup">
-
-<div class="popup-content">
-
-<h2>📊 Dashboard rotazioni</h2>
-
-<div id="dashboardContent"></div>
-
-<br>
-
-<button onclick="chiudiDashboard()">Chiudi</button>
-
-</div>
-
-</div>
-
+<div id="dashboardPopup" class="popup"></div>
 
 <script src="app.js"></script>
 
