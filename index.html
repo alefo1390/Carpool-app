@@ -1,54 +1,48 @@
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🚗 Carpool</title>
-
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
 <h1>🚗 Carpool</h1>
 
-<h2>Presenze</h2>
+<h2>Seleziona chi è presente oggi</h2>
 
-<label><input type="checkbox" value="Alessio"> Alessio</label><br>
-<label><input type="checkbox" value="Sebastiano"> Sebastiano</label><br>
-<label><input type="checkbox" value="Andrea"> Andrea</label><br>
-<label><input type="checkbox" value="Francesca"> Francesca</label><br>
-<label><input type="checkbox" value="Rosario"> Rosario</label><br><br>
+<div class="presenze">
+
+<label><input type="checkbox" value="Alessio"> Alessio</label>
+<label><input type="checkbox" value="Sebastiano"> Sebastiano</label>
+<label><input type="checkbox" value="Andrea"> Andrea</label>
+<label><input type="checkbox" value="Francesca"> Francesca</label>
+<label><input type="checkbox" value="Rosario"> Rosario</label>
+
+</div>
 
 <button onclick="calcolaGuidatore()">🚗 Calcola guidatore</button>
-<button onclick="simulaDomani()">🔮 Simula domani</button>
+
 <button onclick="oggiNonVengo()">❌ Oggi non vengo</button>
+
+<button onclick="simulaDomani()">🔮 Simula domani</button>
+
 <button onclick="apriDashboard()">📊 Dashboard</button>
+
 
 <div id="risultato"></div>
 
-<hr>
-
+<h2>🔁 Rotazione attiva</h2>
 <div id="rotazione"></div>
 
 <hr>
 
 <h2>📅 Storico viaggi</h2>
+<div id="storico"></div>
 
-<div id="calendario"></div>
-
-<!-- POPUP -->
-
-<div id="dashboardPopup" class="popup"></div>
-
-<script src="app.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>
