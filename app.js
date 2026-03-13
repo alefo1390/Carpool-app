@@ -1,11 +1,14 @@
-// FIREBASE CONFIG
+// FIREBASE
+
 const firebaseConfig = {
+
 apiKey:"AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
 authDomain:"carpool-app-3e8d5.firebaseapp.com",
 projectId:"carpool-app-3e8d5",
 storageBucket:"carpool-app-3e8d5.firebasestorage.app",
 messagingSenderId:"462538199019",
 appId:"1:462538199019:web:9e8127f6ad1642d53393ae"
+
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -13,34 +16,35 @@ const db = firebase.firestore();
 
 
 // DATA OGGI
+
 function getToday(){
 
-const d = new Date();
-
-const year = d.getFullYear();
-const month = String(d.getMonth()+1).padStart(2,"0");
-const day = String(d.getDate()).padStart(2,"0");
-
-return `${year}-${month}-${day}`;
+const d=new Date();
+return d.toISOString().split("T")[0];
 
 }
 
 
 // SIGLE
+
 const sigle = {
-"Alessio":"A",
-"Sebastiano":"S",
-"Andrea":"AN",
-"Francesca":"F",
-"Rosario":"R"
+
+Alessio:"A",
+Sebastiano:"S",
+Andrea:"AN",
+Francesca:"F",
+Rosario:"R"
+
 };
 
 
-// ORDINE FISSO COLLEGHI
+// ORDINE
+
 const ordineSigle = ["A","S","AN","F","R"];
 
 
 // ROTAZIONI
+
 const rotazioni = {
 
 "A":["Alessio"],
@@ -88,6 +92,7 @@ const rotazioni = {
 
 
 // TROVA ROTAZIONE
+
 function trovaRotazione(presenti){
 
 const siglePresenti = presenti.map(n => sigle[n]);
@@ -105,46 +110,40 @@ sequenza: rotazioni[chiave] || presenti
 
 
 // CALCOLA GUIDATORE
+
 function calcolaGuidatore(){
 
-const today = getToday();
+const today=getToday();
 
 db.collection("carpool").doc(today).get().then(doc=>{
 
-if(doc.exists && doc.data().driver){
-alert("🚗 Guidatore già calcolato per oggi");
+if(doc.exists){
+alert("Guidatore già calcolato");
 return;
 }
-
-const checkboxes =
-document.querySelectorAll("input[type=checkbox]:checked");
 
 const presenti =
-Array.from(checkboxes).map(c=>c.value);
+Array.from(document.querySelectorAll("input:checked"))
+.map(c=>c.value);
 
-if(presenti.length===0){
-document.getElementById("risultato").innerHTML =
-"Seleziona almeno un collega";
-return;
-}
+if(presenti.length===0) return;
 
-const {chiave,sequenza} = trovaRotazione(presenti);
+const {chiave,sequenza}=trovaRotazione(presenti);
 
 db.collection("rotazioni").doc(chiave).get().then(doc=>{
 
-let index = 0;
+let index=0;
 
 if(doc.exists){
-index = doc.data().index || 0;
+index=doc.data().index||0;
 }
 
-const driver = sequenza[index];
+const driver=sequenza[index];
 
-const passeggeri =
+const passeggeri=
 presenti.filter(p=>p!==driver);
 
-const nextIndex =
-(index+1) % sequenza.length;
+const nextIndex=(index+1)%sequenza.length;
 
 db.collection("rotazioni").doc(chiave).set({
 index:nextIndex
@@ -158,12 +157,10 @@ timestamp:firebase.firestore.FieldValue.serverTimestamp()
 
 });
 
-document.getElementById("risultato").innerHTML =
+document.getElementById("risultato").innerHTML=
 
-`🚗 Guidatore di oggi: ${driver}<br>
+`🚗 Guidatore: ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ")}`;
-
-document.querySelector("button[onclick='calcolaGuidatore()']").disabled = true;
 
 mostraRotazione(sequenza);
 
@@ -177,80 +174,164 @@ renderStorico();
 
 
 // SIMULA DOMANI
+
 function simulaDomani(){
 
-const checkboxes =
-document.querySelectorAll("input[type=checkbox]:checked");
-
 const presenti =
-Array.from(checkboxes).map(c=>c.value);
+Array.from(document.querySelectorAll("input:checked"))
+.map(c=>c.value);
 
 if(presenti.length===0) return;
 
-const {chiave,sequenza} = trovaRotazione(presenti);
+const {chiave,sequenza}=trovaRotazione(presenti);
 
 db.collection("rotazioni").doc(chiave).get().then(doc=>{
 
-let index = 0;
+let index=0;
 
 if(doc.exists){
-index = doc.data().index || 0;
+index=doc.data().index||0;
 }
 
-const driver = sequenza[index];
+const driver=sequenza[index];
 
-const passeggeri =
+const passeggeri=
 presenti.filter(p=>p!==driver);
 
-document.getElementById("risultato").innerHTML =
+document.getElementById("risultato").innerHTML=
 
 `🔮 Domani guiderebbe: ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ")}`;
 
-mostraRotazione(sequenza);
-
 });
-
-}
-
-
-// MOSTRA ROTAZIONE
-function mostraRotazione(rotazione){
-
-let html = "<h3>🔁 Rotazione attiva</h3>";
-
-rotazione.forEach(nome=>{
-html += nome+"<br>";
-});
-
-document.getElementById("rotazione").innerHTML = html;
 
 }
 
 
 // OGGI NON VENGO
+
 function oggiNonVengo(){
 
-const today = getToday();
+const today=getToday();
 
-db.collection("carpool").doc(today).delete();
+db.collection("carpool").doc(today).delete().then(()=>{
 
-document.querySelector("button[onclick='calcolaGuidatore()']").disabled=false;
-
-document.getElementById("risultato").innerHTML =
-"❌ Guidatore sbloccato";
+document.getElementById("risultato").innerHTML=
+"❌ Viaggio cancellato";
 
 renderStorico();
+
+});
+
+}
+
+
+// DASHBOARD
+
+function apriDashboard(){
+
+let html=`
+<h2>📊 Dashboard rotazioni</h2>
+
+<table>
+<tr>
+<th>Rotazione</th>
+<th>Ultimo 🚗</th>
+<th>Prossimo</th>
+</tr>
+`;
+
+const chiavi=Object.keys(rotazioni);
+
+let promises=[];
+
+chiavi.forEach(chiave=>{
+
+promises.push(
+
+db.collection("rotazioni").doc(chiave).get().then(doc=>{
+
+const sequenza=rotazioni[chiave];
+
+let index=0;
+let ultimo="—";
+let prossimo=sequenza[0];
+
+if(doc.exists){
+
+index=doc.data().index||0;
+
+prossimo=sequenza[index];
+
+if(index===0){
+ultimo=sequenza[sequenza.length-1];
+}else{
+ultimo=sequenza[index-1];
+}
+
+}
+
+html+=`
+<tr>
+<td>${chiave}</td>
+<td>${ultimo}</td>
+<td>${prossimo}</td>
+</tr>
+`;
+
+})
+
+);
+
+});
+
+Promise.all(promises).then(()=>{
+
+html+=`
+</table>
+
+<br>
+
+<button onclick="chiudiDashboard()">Chiudi</button>
+`;
+
+const popup=document.getElementById("dashboardPopup");
+
+popup.innerHTML=html;
+popup.style.display="block";
+
+});
+
+}
+
+
+function chiudiDashboard(){
+
+document.getElementById("dashboardPopup").style.display="none";
+
+}
+
+
+// MOSTRA ROTAZIONE
+
+function mostraRotazione(rotazione){
+
+let html="<h3>🔁 Rotazione attiva</h3>";
+
+rotazione.forEach(nome=>{
+html+=nome+"<br>";
+});
+
+document.getElementById("rotazione").innerHTML=html;
 
 }
 
 
 // STORICO
+
 function renderStorico(){
 
 const calendario=document.getElementById("calendario");
-
-calendario.innerHTML="Caricamento...";
 
 db.collection("carpool")
 .orderBy("timestamp","desc")
@@ -265,112 +346,30 @@ snapshot.forEach(doc=>{
 const data=doc.id;
 const info=doc.data();
 
-const giorno=new Date(data)
-.toLocaleDateString('it-IT',{
-weekday:'short',
-day:'numeric',
-month:'numeric'
-});
-
 const driver=info.driver||"—";
 
-let passeggeri=[];
+const passeggeri=
+(info.presenti||[]).filter(p=>p!==driver);
 
-if(info.presenti){
-passeggeri=info.presenti.filter(p=>p!==driver);
-}
+calendario.innerHTML+=`
 
-calendario.innerHTML+=
+<div style="margin-bottom:10px">
 
-`<div style="margin-bottom:10px">
-<b>${giorno}</b> — 🚗 ${driver}<br>
-👥 Passeggeri: ${passeggeri.join(", ")||"—"}
-</div>`;
+<b>${data}</b> — 🚗 ${driver}<br>
 
-});
+👥 Passeggeri: ${passeggeri.join(", ")}
 
-});
+</div>
 
-}
-
-
-// DASHBOARD POPUP
-function apriDashboard(){
-
-const popup = document.getElementById("dashboardPopup");
-const container = document.getElementById("dashboardContent");
-
-popup.style.display = "flex";
-
-let html = `
-<table style="width:100%">
-<tr>
-<th style="text-align:left">Rotazione</th>
-<th style="text-align:left">Ultimo 🚗</th>
-<th style="text-align:left">Prossimo</th>
-</tr>
-`;
-
-db.collection("rotazioni").get().then(snapshot=>{
-
-snapshot.forEach(doc=>{
-
-const chiave = doc.id;
-const index = doc.data().index || 0;
-
-const sequenza = rotazioni[chiave];
-
-if(!sequenza) return;
-
-const ultimo =
-sequenza[(index-1+sequenza.length)%sequenza.length];
-
-const prossimo =
-sequenza[index];
-
-html += `
-<tr>
-<td>${chiave}</td>
-<td>${ultimo}</td>
-<td>${prossimo}</td>
-</tr>
 `;
 
 });
 
-html += "</table>";
-
-container.innerHTML = html;
-
 });
 
 }
 
 
-// CHIUDI DASHBOARD
-function chiudiDashboard(){
-document.getElementById("dashboardPopup").style.display="none";
-}
+// AVVIO
 
-
-// BLOCCO AUTOMATICO
-db.collection("carpool")
-.doc(getToday())
-.get()
-.then(doc=>{
-
-if(doc.exists && doc.data().driver){
-document.querySelector("button[onclick='calcolaGuidatore()']").disabled=true;
-}
-
-});
-
-
-// SERVICE WORKER
-if("serviceWorker" in navigator){
-navigator.serviceWorker.register("service-worker.js");
-}
-
-
-// AVVIO APP
 renderStorico();
