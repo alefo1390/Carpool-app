@@ -14,8 +14,15 @@ const db = firebase.firestore();
 
 // DATA OGGI
 function getToday(){
+
 const d = new Date();
-return d.toISOString().split("T")[0];
+
+const year = d.getFullYear();
+const month = String(d.getMonth()+1).padStart(2,"0");
+const day = String(d.getDate()).padStart(2,"0");
+
+return `${year}-${month}-${day}`;
+
 }
 
 
@@ -80,7 +87,7 @@ const rotazioni = {
 };
 
 
-// TROVA ROTAZIONE CORRETTA
+// TROVA ROTAZIONE
 function trovaRotazione(presenti){
 
 const siglePresenti = presenti.map(n => sigle[n]);
@@ -284,6 +291,65 @@ calendario.innerHTML+=
 
 });
 
+}
+
+
+// DASHBOARD POPUP
+function apriDashboard(){
+
+const popup = document.getElementById("dashboardPopup");
+const container = document.getElementById("dashboardContent");
+
+popup.style.display = "flex";
+
+let html = `
+<table style="width:100%">
+<tr>
+<th style="text-align:left">Rotazione</th>
+<th style="text-align:left">Ultimo 🚗</th>
+<th style="text-align:left">Prossimo</th>
+</tr>
+`;
+
+db.collection("rotazioni").get().then(snapshot=>{
+
+snapshot.forEach(doc=>{
+
+const chiave = doc.id;
+const index = doc.data().index || 0;
+
+const sequenza = rotazioni[chiave];
+
+if(!sequenza) return;
+
+const ultimo =
+sequenza[(index-1+sequenza.length)%sequenza.length];
+
+const prossimo =
+sequenza[index];
+
+html += `
+<tr>
+<td>${chiave}</td>
+<td>${ultimo}</td>
+<td>${prossimo}</td>
+</tr>
+`;
+
+});
+
+html += "</table>";
+
+container.innerHTML = html;
+
+});
+
+}
+
+
+// CHIUDI DASHBOARD
+function chiudiDashboard(){
+document.getElementById("dashboardPopup").style.display="none";
 }
 
 
