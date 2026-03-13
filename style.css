@@ -1,82 +1,69 @@
 body{
-
-font-family:serif;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+background:#f2f2f2;
+text-align:center;
 padding:20px;
-background:#f5f5f5;
+margin:0;
+}
 
+h1{
+font-size:36px;
+margin-bottom:10px;
+}
+
+h2{
+font-size:26px;
+margin-top:25px;
+margin-bottom:15px;
+}
+
+.presenze{
+margin:20px auto;
+width:200px;
+}
+
+.presenze label{
+display:flex;
+align-items:center;
+gap:10px;
+font-size:20px;
+margin:10px 0;
+}
+
+.presenze input{
+transform:scale(1.3);
 }
 
 button{
-
-padding:10px;
-margin:5px;
-border-radius:10px;
+width:100%;
+max-width:320px;
+padding:16px;
+margin:10px auto;
 border:none;
-background:#ddd;
+border-radius:14px;
+background:#57a768;
+color:white;
+font-size:20px;
+display:block;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
 
+button:hover{
+background:#4c955c;
 }
 
 #risultato{
-
 margin-top:20px;
-font-size:18px;
-
+font-size:22px;
 }
 
-
-/* POPUP */
-
-.popup{
-
-position:fixed;
-top:0;
-left:0;
-
-width:100%;
-height:100%;
-
-background:rgba(0,0,0,0.5);
-
-display:none;
-
-align-items:center;
-justify-content:center;
-
-z-index:1000;
-
+#rotazione{
+font-size:20px;
+line-height:1.6;
 }
 
-.popup-content{
-
-background:white;
-
-padding:25px;
-
-border-radius:15px;
-
-width:90%;
-
-max-height:80vh;
-
-overflow:auto;
-
-}
-
-table{
-
-width:100%;
+#storico{
 margin-top:10px;
-
-}
-
-th{
-
-text-align:left;
-
-}
-
-td{
-
-padding:4px;
-
+font-size:18px;
+line-height:1.6;
 }
