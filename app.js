@@ -27,7 +27,7 @@ return d.toISOString().split("T")[0];
 
 // SIGLE
 
-const sigle = {
+const sigle={
 
 Alessio:"A",
 Sebastiano:"S",
@@ -37,15 +37,12 @@ Rosario:"R"
 
 };
 
-
-// ORDINE
-
-const ordineSigle = ["A","S","AN","F","R"];
+const ordineSigle=["A","S","AN","F","R"];
 
 
 // ROTAZIONI
 
-const rotazioni = {
+const rotazioni={
 
 "A":["Alessio"],
 "S":["Sebastiano"],
@@ -95,15 +92,17 @@ const rotazioni = {
 
 function trovaRotazione(presenti){
 
-const siglePresenti = presenti.map(n => sigle[n]);
+const siglePresenti=presenti.map(n=>sigle[n]);
 
-const chiave = ordineSigle
-.filter(s => siglePresenti.includes(s))
+const chiave=ordineSigle
+.filter(s=>siglePresenti.includes(s))
 .join("-");
 
-return {
-chiave: chiave,
-sequenza: rotazioni[chiave] || presenti
+return{
+
+chiave:chiave,
+sequenza:rotazioni[chiave]
+
 };
 
 }
@@ -118,11 +117,13 @@ const today=getToday();
 db.collection("carpool").doc(today).get().then(doc=>{
 
 if(doc.exists){
+
 alert("Guidatore già calcolato");
 return;
+
 }
 
-const presenti =
+const presenti=
 Array.from(document.querySelectorAll("input:checked"))
 .map(c=>c.value);
 
@@ -135,18 +136,21 @@ db.collection("rotazioni").doc(chiave).get().then(doc=>{
 let index=0;
 
 if(doc.exists){
+
 index=doc.data().index||0;
+
 }
 
 const driver=sequenza[index];
 
-const passeggeri=
-presenti.filter(p=>p!==driver);
+const passeggeri=presenti.filter(p=>p!==driver);
 
 const nextIndex=(index+1)%sequenza.length;
 
 db.collection("rotazioni").doc(chiave).set({
+
 index:nextIndex
+
 });
 
 db.collection("carpool").doc(today).set({
@@ -177,7 +181,7 @@ renderStorico();
 
 function simulaDomani(){
 
-const presenti =
+const presenti=
 Array.from(document.querySelectorAll("input:checked"))
 .map(c=>c.value);
 
@@ -190,13 +194,14 @@ db.collection("rotazioni").doc(chiave).get().then(doc=>{
 let index=0;
 
 if(doc.exists){
+
 index=doc.data().index||0;
+
 }
 
 const driver=sequenza[index];
 
-const passeggeri=
-presenti.filter(p=>p!==driver);
+const passeggeri=presenti.filter(p=>p!==driver);
 
 document.getElementById("risultato").innerHTML=
 
@@ -214,12 +219,43 @@ function oggiNonVengo(){
 
 const today=getToday();
 
-db.collection("carpool").doc(today).delete().then(()=>{
+db.collection("carpool").doc(today).get().then(doc=>{
 
-document.getElementById("risultato").innerHTML=
-"❌ Viaggio cancellato";
+if(!doc.exists) return;
+
+const presenti=doc.data().presenti;
+
+const {chiave,sequenza}=trovaRotazione(presenti);
+
+db.collection("rotazioni").doc(chiave).get().then(rotDoc=>{
+
+if(rotDoc.exists){
+
+let index=rotDoc.data().index||0;
+
+let prevIndex=index-1;
+
+if(prevIndex<0){
+
+prevIndex=sequenza.length-1;
+
+}
+
+db.collection("rotazioni").doc(chiave).set({
+
+index:prevIndex
+
+});
+
+}
+
+db.collection("carpool").doc(today).delete();
+
+document.getElementById("risultato").innerHTML="❌ Viaggio cancellato";
 
 renderStorico();
+
+});
 
 });
 
@@ -231,14 +267,19 @@ renderStorico();
 function apriDashboard(){
 
 let html=`
+
 <h2>📊 Dashboard rotazioni</h2>
 
 <table>
+
 <tr>
+
 <th>Rotazione</th>
 <th>Ultimo 🚗</th>
 <th>Prossimo</th>
+
 </tr>
+
 `;
 
 const chiavi=Object.keys(rotazioni);
@@ -263,20 +304,22 @@ index=doc.data().index||0;
 
 prossimo=sequenza[index];
 
-if(index===0){
-ultimo=sequenza[sequenza.length-1];
-}else{
-ultimo=sequenza[index-1];
-}
+ultimo=index===0
+? sequenza[sequenza.length-1]
+: sequenza[index-1];
 
 }
 
 html+=`
+
 <tr>
+
 <td>${chiave}</td>
 <td>${ultimo}</td>
 <td>${prossimo}</td>
+
 </tr>
+
 `;
 
 })
@@ -288,17 +331,20 @@ html+=`
 Promise.all(promises).then(()=>{
 
 html+=`
+
 </table>
 
 <br>
 
 <button onclick="chiudiDashboard()">Chiudi</button>
+
 `;
 
 const popup=document.getElementById("dashboardPopup");
 
-popup.innerHTML=html;
-popup.style.display="block";
+popup.innerHTML=`<div class="popup-content">${html}</div>`;
+
+popup.style.display="flex";
 
 });
 
@@ -312,14 +358,16 @@ document.getElementById("dashboardPopup").style.display="none";
 }
 
 
-// MOSTRA ROTAZIONE
+// ROTAZIONE VISIVA
 
 function mostraRotazione(rotazione){
 
 let html="<h3>🔁 Rotazione attiva</h3>";
 
 rotazione.forEach(nome=>{
+
 html+=nome+"<br>";
+
 });
 
 document.getElementById("rotazione").innerHTML=html;
@@ -334,9 +382,13 @@ function renderStorico(){
 const calendario=document.getElementById("calendario");
 
 db.collection("carpool")
+
 .orderBy("timestamp","desc")
+
 .limit(90)
+
 .get()
+
 .then(snapshot=>{
 
 calendario.innerHTML="";
