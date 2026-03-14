@@ -140,11 +140,11 @@ font-size:16px;
 }
 
 #calendario{
-color:white;
+color:black;
 }
 
 #calendario div{
-background:#2e7d32;
+background:white;
 padding:10px;
 border-radius:10px;
 margin-bottom:10px;
