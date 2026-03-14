@@ -377,6 +377,14 @@ document.getElementById("rotazione").innerHTML=html;
 
 // STORICO
 
+function formatDate(dateString){
+
+const parts = dateString.split("-");
+
+return parts[2] + "-" + parts[1] + "-" + parts[0];
+
+}
+
 function renderStorico(){
 
 const calendario=document.getElementById("calendario");
@@ -407,7 +415,7 @@ calendario.innerHTML+=`
 
 <div style="margin-bottom:10px">
 
-<b>${data}</b> — 🚗 ${driver}<br>
+<b>${formatDate(data)}</b> — 🚗 ${driver}<br>
 
 👥 Passeggeri: ${passeggeri.join(", ")}
 
