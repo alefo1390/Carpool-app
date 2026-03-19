@@ -1,11 +1,14 @@
-// FIREBASE CONFIG
+// FIREBASE
+
 const firebaseConfig = {
+
 apiKey:"AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
 authDomain:"carpool-app-3e8d5.firebaseapp.com",
 projectId:"carpool-app-3e8d5",
 storageBucket:"carpool-app-3e8d5.firebasestorage.app",
 messagingSenderId:"462538199019",
 appId:"1:462538199019:web:9e8127f6ad1642d53393ae"
+
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -13,28 +16,34 @@ const db = firebase.firestore();
 
 
 // DATA OGGI
+
 function getToday(){
-const d = new Date();
+
+const d=new Date();
 return d.toISOString().split("T")[0];
+
 }
 
 
 // SIGLE
-const sigle = {
-"Alessio":"A",
-"Sebastiano":"S",
-"Andrea":"AN",
-"Francesca":"F",
-"Rosario":"R"
+
+const sigle={
+
+Alessio:"A",
+Sebastiano:"S",
+Andrea:"AN",
+Francesca:"F",
+Rosario:"R"
+
 };
 
-
-// ORDINE
-const ordineSigle = ["A","S","AN","F","R"];
+const ordineSigle=["A","S","AN","F","R"];
 
 
-// ROTAZIONI (LE TUE)
-const rotazioni = {
+// ROTAZIONI
+
+const rotazioni={
+
 "A":["Alessio"],
 "S":["Sebastiano"],
 "AN":["Andrea"],
@@ -75,90 +84,90 @@ const rotazioni = {
 "S-AN-F-R":["Francesca","Andrea","Rosario","Sebastiano"],
 
 "A-S-AN-F-R":["Francesca","Andrea","Rosario","Alessio","Sebastiano"]
+
 };
 
 
 // TROVA ROTAZIONE
-function trovaRotazione(presenti){
-const siglePresenti = presenti.map(n => sigle[n]);
 
-const chiave = ordineSigle
-.filter(s => siglePresenti.includes(s))
+function trovaRotazione(presenti){
+
+const siglePresenti=presenti.map(n=>sigle[n]);
+
+const chiave=ordineSigle
+.filter(s=>siglePresenti.includes(s))
 .join("-");
 
-return {
-chiave: chiave,
-sequenza: rotazioni[chiave] || presenti
+return{
+
+chiave:chiave,
+sequenza:rotazioni[chiave]
+
 };
+
 }
 
 
 // CALCOLA GUIDATORE
+
 function calcolaGuidatore(){
 
-const today = getToday();
+const today=getToday();
 
 db.collection("carpool").doc(today).get().then(doc=>{
 
-if(doc.exists && doc.data().driver){
-alert("🚗 Guidatore già calcolato per oggi");
+if(doc.exists){
+
+alert("Guidatore già calcolato");
 return;
+
 }
 
-const checkboxes =
-document.querySelectorAll("input[type=checkbox]:checked");
-
-const presenti =
-Array.from(checkboxes).map(c=>c.value);
+const presenti=
+Array.from(document.querySelectorAll("input:checked"))
+.map(c=>c.value);
 
 const commento = document.getElementById("commento").value;
 
-if(presenti.length===0){
-document.getElementById("risultato").innerHTML =
-"Seleziona almeno un collega";
-return;
-}
+if(presenti.length===0) return;
 
-const {chiave,sequenza} = trovaRotazione(presenti);
+const {chiave,sequenza}=trovaRotazione(presenti);
 
 db.collection("rotazioni").doc(chiave).get().then(doc=>{
 
-let index = 0;
+let index=0;
 
 if(doc.exists){
-index = doc.data().index || 0;
+
+index=doc.data().index||0;
+
 }
 
-const driver = sequenza[index];
+const driver=sequenza[index];
 
-const passeggeri =
-presenti.filter(p=>p!==driver);
+const passeggeri=presenti.filter(p=>p!==driver);
 
-const nextIndex =
-(index+1) % sequenza.length;
+const nextIndex=(index+1)%sequenza.length;
 
 db.collection("rotazioni").doc(chiave).set({
+
 index:nextIndex
+
 });
 
 db.collection("carpool").doc(today).set({
-
-driver:driver,
-presenti:presenti,
-commento:commento,
-timestamp:firebase.firestore.FieldValue.serverTimestamp()
-
+driver: driver,
+presenti: presenti,
+commento: commento,
+timestamp: firebase.firestore.FieldValue.serverTimestamp()
 });
 
-document.getElementById("risultato").innerHTML =
+  document.getElementById("commento").value = "";
 
-`🚗 Guidatore di oggi: ${driver}<br>
+document.getElementById("risultato").innerHTML=
+
+`🚗 Guidatore: ${driver}<br>
 👥 Passeggeri: ${passeggeri.join(", ")}`;
-
-document.querySelector("button[onclick='calcolaGuidatore()']").disabled = true;
-
-// svuota commento
-document.getElementById("commento").value = "";
 
 mostraRotazione(sequenza);
 
@@ -171,34 +180,226 @@ renderStorico();
 }
 
 
-// OGGI NON VENGO (FIX: non tocca rotazione)
-function oggiNonVengo(){
+// SIMULA DOMANI
 
-const today = getToday();
+function simulaDomani(){
 
-db.collection("carpool").doc(today).delete();
+const presenti=
+Array.from(document.querySelectorAll("input:checked"))
+.map(c=>c.value);
 
-document.querySelector("button[onclick='calcolaGuidatore()']").disabled=false;
+if(presenti.length===0) return;
 
-document.getElementById("risultato").innerHTML =
-"❌ Guidatore sbloccato";
+const {chiave,sequenza}=trovaRotazione(presenti);
 
-renderStorico();
+db.collection("rotazioni").doc(chiave).get().then(doc=>{
+
+let index=0;
+
+if(doc.exists){
+
+index=doc.data().index||0;
+
+}
+
+const driver=sequenza[index];
+
+const passeggeri=presenti.filter(p=>p!==driver);
+
+document.getElementById("risultato").innerHTML=
+
+`🔮 Domani guiderebbe: ${driver}<br>
+👥 Passeggeri: ${passeggeri.join(", ")}`;
+
+});
 
 }
 
 
-// STORICO (CON COMMENTO)
+// OGGI NON VENGO
+
+function oggiNonVengo(){
+
+const today=getToday();
+
+db.collection("carpool").doc(today).get().then(doc=>{
+
+if(!doc.exists) return;
+
+const presenti=doc.data().presenti;
+
+const {chiave,sequenza}=trovaRotazione(presenti);
+
+db.collection("rotazioni").doc(chiave).get().then(rotDoc=>{
+
+if(rotDoc.exists){
+
+let index=rotDoc.data().index||0;
+
+let prevIndex=index-1;
+
+if(prevIndex<0){
+
+prevIndex=sequenza.length-1;
+
+}
+
+db.collection("rotazioni").doc(chiave).set({
+
+index:prevIndex
+
+});
+
+}
+
+db.collection("carpool").doc(today).delete();
+
+document.getElementById("risultato").innerHTML="❌ Viaggio cancellato";
+
+renderStorico();
+
+});
+
+});
+
+}
+
+
+// DASHBOARD
+
+function apriDashboard(){
+
+let html=`
+
+<h2>📊 Dashboard rotazioni</h2>
+
+<table>
+
+<tr>
+
+<th>Rotazione</th>
+<th>Ultimo 🚗</th>
+<th>Prossimo</th>
+
+</tr>
+
+`;
+
+const chiavi=Object.keys(rotazioni);
+
+let promises=[];
+
+chiavi.forEach(chiave=>{
+
+promises.push(
+
+db.collection("rotazioni").doc(chiave).get().then(doc=>{
+
+const sequenza=rotazioni[chiave];
+
+let index=0;
+let ultimo="—";
+let prossimo=sequenza[0];
+
+if(doc.exists){
+
+index=doc.data().index||0;
+
+prossimo=sequenza[index];
+
+ultimo=index===0
+? sequenza[sequenza.length-1]
+: sequenza[index-1];
+
+}
+
+html+=`
+
+<tr>
+
+<td>${chiave}</td>
+<td>${ultimo}</td>
+<td>${prossimo}</td>
+
+</tr>
+
+`;
+
+})
+
+);
+
+});
+
+Promise.all(promises).then(()=>{
+
+html+=`
+
+</table>
+
+<br>
+
+<button onclick="chiudiDashboard()">Chiudi</button>
+
+`;
+
+const popup=document.getElementById("dashboardPopup");
+
+popup.innerHTML=`<div class="popup-content">${html}</div>`;
+
+popup.style.display="flex";
+
+});
+
+}
+
+
+function chiudiDashboard(){
+
+document.getElementById("dashboardPopup").style.display="none";
+
+}
+
+
+// ROTAZIONE VISIVA
+
+function mostraRotazione(rotazione){
+
+let html="<h3>🔁 Rotazione attiva</h3>";
+
+rotazione.forEach(nome=>{
+
+html+=nome+"<br>";
+
+});
+
+document.getElementById("rotazione").innerHTML=html;
+
+}
+
+
+// STORICO
+
+function formatDate(dateString){
+
+const parts = dateString.split("-");
+
+return parts[2] + "-" + parts[1] + "-" + parts[0];
+
+}
+
 function renderStorico(){
 
 const calendario=document.getElementById("calendario");
 
-calendario.innerHTML="Caricamento...";
-
 db.collection("carpool")
+
 .orderBy("timestamp","desc")
+
 .limit(90)
+
 .get()
+
 .then(snapshot=>{
 
 calendario.innerHTML="";
@@ -208,30 +409,26 @@ snapshot.forEach(doc=>{
 const data=doc.id;
 const info=doc.data();
 
-const giorno=new Date(data)
-.toLocaleDateString('it-IT',{
-weekday:'short',
-day:'numeric',
-month:'numeric'
-});
-
 const driver=info.driver||"—";
-
-let passeggeri=[];
-
-if(info.presenti){
-passeggeri=info.presenti.filter(p=>p!==driver);
-}
 
 const commento = info.commento || "";
 
-calendario.innerHTML+=
+const passeggeri=
+(info.presenti||[]).filter(p=>p!==driver);
 
-`<div style="margin-bottom:10px">
-<b>${giorno}</b> — 🚗 ${driver}<br>
-👥 Passeggeri: ${passeggeri.join(", ")||"—"}
+calendario.innerHTML+=`
+
+<div style="margin-bottom:10px">
+
+<b>${formatDate(data)}</b> — 🚗 ${driver}<br>
+
+👥 Passeggeri: ${passeggeri.join(", ")}
+
 ${commento ? "<br>💬 " + commento : ""}
-</div>`;
+
+</div>
+
+`;
 
 });
 
@@ -241,4 +438,5 @@ ${commento ? "<br>💬 " + commento : ""}
 
 
 // AVVIO
+
 renderStorico();
