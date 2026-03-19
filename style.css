@@ -149,3 +149,15 @@ padding:10px;
 border-radius:10px;
 margin-bottom:10px;
 }
+
+textarea{
+width:90%;
+max-width:320px;
+height:80px;
+margin:15px auto;
+display:block;
+border-radius:12px;
+border:1px solid #ccc;
+padding:10px;
+font-size:16px;
+}
