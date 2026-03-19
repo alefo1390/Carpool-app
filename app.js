@@ -69,7 +69,7 @@ const rotazioni = {
 "AN-F-R":["Andrea","Francesca","Rosario"],
 
 "A-S-AN-F":["Sebastiano","Francesca","Alessio","Andrea"],
-"A-S-AN-R":["Rosario","Sebastiano","Alessio","Andrea"],
+"A-S-AN-R":["Sebastiano","Alessio","Andrea","Rosario"],
 "A-S-F-R":["Alessio","Sebastiano","Francesca","Rosario"],
 "A-AN-F-R":["Andrea","Francesca","Rosario","Alessio"],
 "S-AN-F-R":["Francesca","Andrea","Rosario","Sebastiano"],
