@@ -73,7 +73,7 @@ const rotazioni={
 
 "S-AN-F":["Andrea","Sebastiano","Francesca"],
 "S-AN-R":["Sebastiano","Rosario","Andrea"],
-"S-F-R":["Sebastiano","Rosario","Francesca"],
+"S-F-R":["Francesca","Rosario","Sebastiano"],
 
 "AN-F-R":["Andrea","Francesca","Rosario"],
 
