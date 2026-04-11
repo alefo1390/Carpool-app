@@ -1,60 +1,28 @@
-// =====================
-// BOOT DIAGNOSTICO SICURO
-// =====================
-console.log("🚀 APP JS CARICATO");
+console.log("🚀 APP CARICATA");
 
-window.addEventListener("load", () => {
-  initApp();
-});
+window.addEventListener("load", init);
 
-function initApp(){
+function init(){
 
-  try {
-
-    if (!window.firebase) {
-      alert("❌ Firebase non caricato (script mancante o cache)");
-      return;
-    }
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-
-    const db = firebase.firestore();
-
-    console.log("🔥 Firebase OK");
-
-    // test rapido connessione
-    db.collection("carpool").limit(1).get()
-      .then(() => console.log("✅ Firestore OK"))
-      .catch(err => {
-        console.error("❌ Firestore errore:", err);
-        alert("Errore Firestore: " + err.message);
-      });
-
-    // esponiamo db globalmente (IMPORTANTE)
-    window.db = db;
-
-    testUI();
-
-  } catch (e) {
-    console.error("💥 ERRORE INIT:", e);
-    alert("Errore inizializzazione: " + e.message);
+  if (!window.firebase) {
+    alert("Firebase non caricato");
+    return;
   }
+
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
+  window.db = firebase.firestore();
+
+  console.log("🔥 Firebase OK");
+
+  renderStorico();
 }
 
 
 // =====================
-// TEST UI
-// =====================
-function testUI(){
-  const r = document.getElementById("risultato");
-  if (r) r.innerHTML = "✅ APP OK";
-}
-
-
-// =====================
-// DATA OGGI
+// DATA
 // =====================
 function getToday(){
   const d = new Date();
@@ -76,7 +44,7 @@ const sigle = {
 
 
 // =====================
-// ROTAZIONI (MINIMA SICURA BASE)
+// ROTAZIONI
 // =====================
 const rotazioni = {
   "A":["Alessio"],
@@ -88,22 +56,17 @@ const rotazioni = {
 
 
 // =====================
-// TROVA ROTAZIONE (ROBUSTA)
+// TROVA ROTAZIONE
 // =====================
 function trovaRotazione(presenti){
 
-  const siglePresenti = presenti
-    .map(n => sigle[n])
-    .filter(Boolean)
-    .sort();
-
+  const siglePresenti = presenti.map(n => sigle[n]).sort();
   const chiave = siglePresenti.join("-");
 
-  const sequenza = rotazioni[chiave] || null;
-
-  console.log("🔎 chiave:", chiave);
-
-  return { chiave, sequenza };
+  return {
+    chiave,
+    sequenza: rotazioni[chiave] || null
+  };
 }
 
 
@@ -112,32 +75,28 @@ function trovaRotazione(presenti){
 // =====================
 function calcolaGuidatore(){
 
-  const db = window.db;
-  if (!db) return alert("DB non inizializzato");
-
-  const today = getToday();
-
   const presenti = Array.from(document.querySelectorAll("input:checked"))
     .map(c => c.value);
 
-  if (presenti.length === 0) {
+  if(presenti.length === 0){
     alert("Seleziona almeno una persona");
     return;
   }
 
-  const commentoEl = document.getElementById("commento");
-  const commento = commentoEl ? commentoEl.value : "";
+  const commento = document.getElementById("commento").value || "";
 
   const {chiave, sequenza} = trovaRotazione(presenti);
 
-  if (!sequenza) {
-    alert("Rotazione mancante: " + chiave);
+  if(!sequenza){
+    alert("Rotazione non trovata: " + chiave);
     return;
   }
 
+  const today = getToday();
+
   db.collection("carpool").doc(today).get().then(doc => {
 
-    if (doc.exists) {
+    if(doc.exists){
       alert("Già calcolato oggi");
       return;
     }
@@ -152,16 +111,13 @@ function calcolaGuidatore(){
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    document.getElementById("commento").value = "";
-
     document.getElementById("risultato").innerHTML =
-      `🚗 Guidatore: ${driver}<br>👥 Passeggeri: ${passeggeri.join(", ")}`;
+      `🚗 ${driver}<br>👥 ${passeggeri.join(", ")}`;
 
     mostraRotazione(sequenza);
     renderStorico();
 
   });
-
 }
 
 
@@ -169,7 +125,7 @@ function calcolaGuidatore(){
 // SIMULA DOMANI
 // =====================
 function simulaDomani(){
-  alert("Simulazione OK (versione base)");
+  alert("Simulazione OK");
 }
 
 
@@ -177,7 +133,7 @@ function simulaDomani(){
 // OGGI NON VENGO
 // =====================
 function oggiNonVengo(){
-  alert("Funzione OK (base)");
+  alert("Funzione OK");
 }
 
 
@@ -186,11 +142,9 @@ function oggiNonVengo(){
 // =====================
 function mostraRotazione(rotazione){
 
-  const el = document.getElementById("rotazione");
-  if (!el) return;
-
-  el.innerHTML = "<h3>🔁 Rotazione</h3>" +
-    rotazione.map(n => n).join("<br>");
+  document.getElementById("rotazione").innerHTML =
+    "<h3>🔁 Rotazione</h3>" +
+    rotazione.join("<br>");
 }
 
 
@@ -205,10 +159,9 @@ function formatDate(d){
 function renderStorico(){
 
   const db = window.db;
-  if (!db) return;
+  if(!db) return;
 
   const calendario = document.getElementById("calendario");
-  if (!calendario) return;
 
   db.collection("carpool")
     .orderBy("timestamp","desc")
@@ -220,15 +173,15 @@ function renderStorico(){
 
       snapshot.forEach(doc => {
 
-        const d = doc.id;
+        const data = doc.id;
         const info = doc.data();
 
         const driver = info.driver || "—";
         const passeggeri = (info.presenti || []).filter(p => p !== driver);
 
         calendario.innerHTML += `
-          <div style="margin-bottom:10px">
-            <b>${formatDate(d)}</b><br>
+          <div>
+            <b>${formatDate(data)}</b><br>
             🚗 ${driver}<br>
             👥 ${passeggeri.join(", ")}
           </div>
@@ -237,9 +190,3 @@ function renderStorico(){
 
     });
 }
-
-
-// =====================
-// AVVIO
-// =====================
-renderStorico();
