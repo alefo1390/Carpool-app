@@ -1,10 +1,12 @@
+Index.html
+
 <!DOCTYPE html>
 <html lang="it">
 
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>🚗 Carpool</title>
 
@@ -19,32 +21,37 @@
 
 <h1>🚗 Carpool</h1>
 
-<h2>Presenze</h2>
+<h2>Seleziona chi è presente oggi</h2>
 
-<label><input type="checkbox" value="Alessio"> Alessio</label><br>
-<label><input type="checkbox" value="Sebastiano"> Sebastiano</label><br>
-<label><input type="checkbox" value="Andrea"> Andrea</label><br>
-<label><input type="checkbox" value="Francesca"> Francesca</label><br>
-<label><input type="checkbox" value="Rosario"> Rosario</label><br><br>
+<div class="presenze">
+
+<label><input type="checkbox" value="Alessio"> Alessio</label>
+<label><input type="checkbox" value="Sebastiano"> Sebastiano</label>
+<label><input type="checkbox" value="Andrea"> Andrea</label>
+<label><input type="checkbox" value="Francesca"> Francesca</label>
+<label><input type="checkbox" value="Rosario"> Rosario</label>
+
+</div>
+
+  <textarea id="commento" placeholder="💬 Scrivi un commento (facoltativo)"></textarea>
 
 <button onclick="calcolaGuidatore()">🚗 Calcola guidatore</button>
-<button onclick="simulaDomani()">🔮 Simula domani</button>
+
 <button onclick="oggiNonVengo()">❌ Oggi non vengo</button>
+
+<button onclick="simulaDomani()">🔮 Simula domani</button>
+
 <button onclick="apriDashboard()">📊 Dashboard</button>
 
 <div id="risultato"></div>
 
-<hr>
-
+<h2>🔁 Rotazione attiva</h2>
 <div id="rotazione"></div>
 
 <hr>
 
 <h2>📅 Storico viaggi</h2>
-
 <div id="calendario"></div>
-
-<!-- POPUP -->
 
 <div id="dashboardPopup" class="popup"></div>
 
@@ -52,3 +59,208 @@
 
 </body>
 </html>
+
+
+
+
+
+Manifest.json
+
+  "name": "Carpool Colleghi",
+  "short_name": "Carpool",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#27ae60",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
+
+
+
+Service-worker.js
+
+self.addEventListener("install", e => {
+self.skipWaiting();
+});
+
+self.addEventListener("activate", e => {
+self.clients.claim();
+});
+
+self.addEventListener("fetch", event => {
+event.respondWith(fetch(event.request));
+});
+
+
+
+Style.css
+
+body{
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+background:#f2f2f2;
+text-align:center;
+padding:20px;
+margin:0;
+}
+
+/* TITOLI */
+
+h1{
+font-size:36px;
+margin-bottom:10px;
+}
+
+h2{
+font-size:26px;
+margin-top:25px;
+margin-bottom:15px;
+}
+
+/* PRESENZE */
+
+.presenze{
+margin:20px auto;
+width:200px;
+text-align:left;
+}
+
+.presenze label{
+display:flex;
+align-items:center;
+gap:10px;
+font-size:20px;
+margin:10px 0;
+}
+
+.presenze input{
+transform:scale(1.3);
+}
+
+/* PULSANTI */
+
+button{
+width:100%;
+max-width:320px;
+padding:16px;
+margin:10px auto;
+border:none;
+border-radius:14px;
+background:#57a768;
+color:white;
+font-size:20px;
+display:block;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+cursor:pointer;
+}
+
+button:hover{
+background:#4c955c;
+}
+
+/* RISULTATO */
+
+#risultato{
+margin-top:20px;
+font-size:22px;
+}
+
+/* ROTAZIONE */
+
+#rotazione{
+font-size:20px;
+line-height:1.6;
+margin-top:10px;
+}
+
+/* STORICO */
+
+#calendario{
+margin-top:10px;
+font-size:18px;
+line-height:1.6;
+}
+
+/* POPUP DASHBOARD */
+
+.popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:1000;
+}
+
+.popup-content{
+background:white;
+padding:25px;
+border-radius:15px;
+width:90%;
+max-width:420px;
+max-height:80vh;
+overflow:auto;
+box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+.popup-content h2{
+margin-top:0;
+}
+
+.popup-content table{
+width:100%;
+margin-top:10px;
+border-collapse:collapse;
+}
+
+.popup-content th{
+text-align:left;
+padding:6px;
+border-bottom:1px solid #ddd;
+}
+
+.popup-content td{
+padding:6px;
+}
+
+.popup-content button{
+margin-top:20px;
+background:#57a768;
+}
+
+#calendario b{
+color:#222;
+font-size:16px;
+}
+
+#calendario{
+color:black;
+}
+
+#calendario div{
+background:white;
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+textarea{
+width:90%;
+max-width:320px;
+height:80px;
+margin:15px auto;
+display:block;
+border-radius:12px;
+border:1px solid #ccc;
+padding:10px;
+font-size:16px;
+}
