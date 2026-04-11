@@ -1,443 +1,288 @@
-// FIREBASE
-
-const firebaseConfig = {
-
-apiKey:"AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
-authDomain:"carpool-app-3e8d5.firebaseapp.com",
-projectId:"carpool-app-3e8d5",
-storageBucket:"carpool-app-3e8d5.firebasestorage.app",
-messagingSenderId:"462538199019",
-appId:"1:462538199019:web:9e8127f6ad1642d53393ae"
-
-};
-
-firebase.initializeApp(firebaseConfig);
+// =====================
+// FIREBASE SAFE INIT
+// =====================
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.firestore();
 
 
-// DATA OGGI
-
+// =====================
+// DATA OGGI (timezone safe)
+// =====================
 function getToday(){
-
-const d=new Date();
-return d.toISOString().split("T")[0];
-
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split("T")[0];
 }
 
 
+// =====================
 // SIGLE
-
-const sigle={
-
-Alessio:"A",
-Sebastiano:"S",
-Andrea:"AN",
-Francesca:"F",
-Rosario:"R"
-
+// =====================
+const sigle = {
+  Alessio: "A",
+  Sebastiano: "S",
+  Andrea: "AN",
+  Francesca: "F",
+  Rosario: "R"
 };
 
-const ordineSigle=["A","S","AN","F","R"];
 
-
+// =====================
 // ROTAZIONI
+// =====================
+const rotazioni = {
+  "A": ["Alessio"],
+  "S": ["Sebastiano"],
+  "AN": ["Andrea"],
+  "F": ["Francesca"],
+  "R": ["Rosario"],
 
-const rotazioni={
+  "A-S": ["Sebastiano","Alessio"],
+  "A-AN": ["Alessio","Andrea"],
+  "A-F": ["Francesca","Alessio"],
+  "A-R": ["Rosario","Alessio"],
 
-"A":["Alessio"],
-"S":["Sebastiano"],
-"AN":["Andrea"],
-"F":["Francesca"],
-"R":["Rosario"],
+  "S-AN": ["Andrea","Sebastiano"],
+  "S-F": ["Francesca","Sebastiano"],
+  "S-R": ["Rosario","Sebastiano"],
 
-"A-S":["Sebastiano","Alessio"],
-"A-AN":["Alessio","Andrea"],
-"A-F":["Francesca","Alessio"],
-"A-R":["Rosario","Alessio"],
+  "AN-F": ["Francesca","Andrea"],
+  "AN-R": ["Andrea","Rosario"],
+  "F-R": ["Francesca","Rosario"],
 
-"S-AN":["Andrea","Sebastiano"],
-"S-F":["Francesca","Sebastiano"],
-"S-R":["Rosario","Sebastiano"],
+  "A-S-AN": ["Sebastiano","Andrea","Alessio"],
+  "A-S-F": ["Francesca","Sebastiano","Alessio"],
+  "A-S-R": ["Sebastiano","Rosario","Alessio"],
 
-"AN-F":["Francesca","Andrea"],
-"AN-R":["Andrea","Rosario"],
-"F-R":["Francesca","Rosario"],
+  "A-AN-F": ["Francesca","Andrea","Alessio"],
+  "A-AN-R": ["Alessio","Andrea","Rosario"],
+  "A-F-R": ["Rosario","Alessio","Francesca"],
 
-"A-S-AN":["Sebastiano","Andrea","Alessio"],
-"A-S-F":["Francesca","Sebastiano","Alessio"],
-"A-S-R":["Sebastiano","Rosario","Alessio"],
+  "S-AN-F": ["Andrea","Sebastiano","Francesca"],
+  "S-AN-R": ["Sebastiano","Rosario","Andrea"],
+  "S-F-R": ["Francesca","Rosario","Sebastiano"],
 
-"A-AN-F":["Francesca","Andrea","Alessio"],
-"A-AN-R":["Alessio","Andrea","Rosario"],
-"A-F-R":["Rosario","Alessio","Francesca"],
+  "AN-F-R": ["Andrea","Francesca","Rosario"],
 
-"S-AN-F":["Andrea","Sebastiano","Francesca"],
-"S-AN-R":["Sebastiano","Rosario","Andrea"],
-"S-F-R":["Francesca","Rosario","Sebastiano"],
+  "A-S-AN-F": ["Sebastiano","Francesca","Alessio","Andrea"],
+  "A-S-AN-R": ["Sebastiano","Alessio","Andrea","Rosario"],
+  "A-S-F-R": ["Alessio","Sebastiano","Francesca","Rosario"],
+  "A-AN-F-R": ["Andrea","Francesca","Rosario","Alessio"],
+  "S-AN-F-R": ["Rosario","Sebastiano","Francesca","Andrea"],
 
-"AN-F-R":["Andrea","Francesca","Rosario"],
-
-"A-S-AN-F":["Sebastiano","Francesca","Alessio","Andrea"],
-"A-S-AN-R":["Sebastiano","Alessio","Andrea","Rosario"],
-"A-S-F-R":["Alessio","Sebastiano","Francesca","Rosario"],
-"A-AN-F-R":["Andrea","Francesca","Rosario","Alessio"],
-"S-AN-F-R":["Rosario","Sebastiano","Francesca","Andrea"],
-
-"A-S-AN-F-R":["Francesca","Andrea","Rosario","Alessio","Sebastiano"]
-
+  "A-S-AN-F-R": ["Francesca","Andrea","Rosario","Alessio","Sebastiano"]
 };
 
 
-// TROVA ROTAZIONE
-
+// =====================
+// TROVA ROTAZIONE SICURA
+// =====================
 function trovaRotazione(presenti){
 
-const siglePresenti=presenti.map(n=>sigle[n]);
+  const siglePresenti = presenti.map(n => sigle[n]).sort();
+  const chiave = siglePresenti.join("-");
 
-const chiave=ordineSigle
-.filter(s=>siglePresenti.includes(s))
-.join("-");
-
-return{
-
-chiave:chiave,
-sequenza:rotazioni[chiave]
-
-};
-
+  return {
+    chiave,
+    sequenza: rotazioni[chiave] || null
+  };
 }
 
 
+// =====================
 // CALCOLA GUIDATORE
-
+// =====================
 function calcolaGuidatore(){
 
-const today=getToday();
+  const today = getToday();
 
-db.collection("carpool").doc(today).get().then(doc=>{
+  db.collection("carpool").doc(today).get().then(doc => {
 
-if(doc.exists){
+    if(doc.exists){
+      alert("Guidatore già calcolato");
+      return;
+    }
 
-alert("Guidatore già calcolato");
-return;
+    const presenti = Array.from(document.querySelectorAll("input:checked"))
+      .map(c => c.value);
 
-}
+    if(presenti.length === 0){
+      alert("Seleziona almeno una persona");
+      return;
+    }
 
-const presenti=
-Array.from(document.querySelectorAll("input:checked"))
-.map(c=>c.value);
+    const commentoInput = document.getElementById("commento");
+    const commento = commentoInput ? commentoInput.value : "";
 
-const commento = document.getElementById("commento").value;
+    const {chiave, sequenza} = trovaRotazione(presenti);
 
-if(presenti.length===0) return;
+    if(!sequenza){
+      alert("Rotazione non trovata: " + chiave);
+      return;
+    }
 
-const {chiave,sequenza}=trovaRotazione(presenti);
+    db.collection("rotazioni").doc(chiave).get().then(doc => {
 
-db.collection("rotazioni").doc(chiave).get().then(doc=>{
+      let index = doc.exists ? (doc.data().index || 0) : 0;
 
-let index=0;
+      const driver = sequenza[index];
+      const passeggeri = presenti.filter(p => p !== driver);
 
-if(doc.exists){
+      const nextIndex = (index + 1) % sequenza.length;
 
-index=doc.data().index||0;
+      db.collection("rotazioni").doc(chiave).set({ index: nextIndex });
 
-}
+      db.collection("carpool").doc(today).set({
+        driver,
+        presenti,
+        commento,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
 
-const driver=sequenza[index];
+      document.getElementById("commento").value = "";
 
-const passeggeri=presenti.filter(p=>p!==driver);
+      document.getElementById("risultato").innerHTML =
+        `🚗 Guidatore: ${driver}<br>👥 Passeggeri: ${passeggeri.join(", ")}`;
 
-const nextIndex=(index+1)%sequenza.length;
+      mostraRotazione(sequenza);
+      renderStorico();
 
-db.collection("rotazioni").doc(chiave).set({
+    });
 
-index:nextIndex
-
-});
-
-db.collection("carpool").doc(today).set({
-driver: driver,
-presenti: presenti,
-commento: commento,
-timestamp: firebase.firestore.FieldValue.serverTimestamp()
-});
-
-  document.getElementById("commento").value = "";
-
-document.getElementById("risultato").innerHTML=
-
-`🚗 Guidatore: ${driver}<br>
-👥 Passeggeri: ${passeggeri.join(", ")}`;
-
-mostraRotazione(sequenza);
-
-renderStorico();
-
-});
-
-});
-
+  });
 }
 
 
+// =====================
 // SIMULA DOMANI
-
+// =====================
 function simulaDomani(){
 
-const presenti=
-Array.from(document.querySelectorAll("input:checked"))
-.map(c=>c.value);
+  const presenti = Array.from(document.querySelectorAll("input:checked"))
+    .map(c => c.value);
 
-if(presenti.length===0) return;
+  if(presenti.length === 0) return;
 
-const {chiave,sequenza}=trovaRotazione(presenti);
+  const {chiave, sequenza} = trovaRotazione(presenti);
 
-db.collection("rotazioni").doc(chiave).get().then(doc=>{
+  if(!sequenza){
+    alert("Rotazione non trovata: " + chiave);
+    return;
+  }
 
-let index=0;
+  db.collection("rotazioni").doc(chiave).get().then(doc => {
 
-if(doc.exists){
+    let index = doc.exists ? (doc.data().index || 0) : 0;
 
-index=doc.data().index||0;
+    const driver = sequenza[index];
+    const passeggeri = presenti.filter(p => p !== driver);
 
-}
+    document.getElementById("risultato").innerHTML =
+      `🔮 Domani guiderebbe: ${driver}<br>👥 Passeggeri: ${passeggeri.join(", ")}`;
 
-const driver=sequenza[index];
-
-const passeggeri=presenti.filter(p=>p!==driver);
-
-document.getElementById("risultato").innerHTML=
-
-`🔮 Domani guiderebbe: ${driver}<br>
-👥 Passeggeri: ${passeggeri.join(", ")}`;
-
-});
-
+  });
 }
 
 
+// =====================
 // OGGI NON VENGO
-
+// =====================
 function oggiNonVengo(){
 
-const today=getToday();
+  const today = getToday();
 
-db.collection("carpool").doc(today).get().then(doc=>{
+  db.collection("carpool").doc(today).get().then(doc => {
 
-if(!doc.exists) return;
+    if(!doc.exists) return;
 
-const presenti=doc.data().presenti;
+    const presenti = doc.data().presenti;
 
-const {chiave,sequenza}=trovaRotazione(presenti);
+    const {chiave, sequenza} = trovaRotazione(presenti);
 
-db.collection("rotazioni").doc(chiave).get().then(rotDoc=>{
+    if(sequenza){
 
-if(rotDoc.exists){
+      db.collection("rotazioni").doc(chiave).get().then(rotDoc => {
 
-let index=rotDoc.data().index||0;
+        let index = rotDoc.exists ? (rotDoc.data().index || 0) : 0;
 
-let prevIndex=index-1;
+        let prevIndex = index - 1;
+        if(prevIndex < 0) prevIndex = sequenza.length - 1;
 
-if(prevIndex<0){
+        db.collection("rotazioni").doc(chiave).set({ index: prevIndex });
 
-prevIndex=sequenza.length-1;
+      });
+    }
 
-}
+    db.collection("carpool").doc(today).delete();
 
-db.collection("rotazioni").doc(chiave).set({
+    document.getElementById("risultato").innerHTML = "❌ Viaggio cancellato";
 
-index:prevIndex
+    renderStorico();
 
-});
-
-}
-
-db.collection("carpool").doc(today).delete();
-
-document.getElementById("risultato").innerHTML="❌ Viaggio cancellato";
-
-renderStorico();
-
-});
-
-});
-
+  });
 }
 
 
-// DASHBOARD
-
-function apriDashboard(){
-
-let html=`
-
-<h2>📊 Dashboard rotazioni</h2>
-
-<table>
-
-<tr>
-
-<th>Rotazione</th>
-<th>Ultimo 🚗</th>
-<th>Prossimo</th>
-
-</tr>
-
-`;
-
-const chiavi=Object.keys(rotazioni);
-
-let promises=[];
-
-chiavi.forEach(chiave=>{
-
-promises.push(
-
-db.collection("rotazioni").doc(chiave).get().then(doc=>{
-
-const sequenza=rotazioni[chiave];
-
-let index=0;
-let ultimo="—";
-let prossimo=sequenza[0];
-
-if(doc.exists){
-
-index=doc.data().index||0;
-
-prossimo=sequenza[index];
-
-ultimo=index===0
-? sequenza[sequenza.length-1]
-: sequenza[index-1];
-
-}
-
-html+=`
-
-<tr>
-
-<td>${chiave}</td>
-<td>${ultimo}</td>
-<td>${prossimo}</td>
-
-</tr>
-
-`;
-
-})
-
-);
-
-});
-
-Promise.all(promises).then(()=>{
-
-html+=`
-
-</table>
-
-<br>
-
-<button onclick="chiudiDashboard()">Chiudi</button>
-
-`;
-
-const popup=document.getElementById("dashboardPopup");
-
-popup.innerHTML=`<div class="popup-content">${html}</div>`;
-
-popup.style.display="flex";
-
-});
-
-}
-
-
-function chiudiDashboard(){
-
-document.getElementById("dashboardPopup").style.display="none";
-
-}
-
-
+// =====================
 // ROTAZIONE VISIVA
-
+// =====================
 function mostraRotazione(rotazione){
 
-let html="<h3>🔁 Rotazione attiva</h3>";
+  let html = "<h3>🔁 Rotazione attiva</h3>";
 
-rotazione.forEach(nome=>{
+  rotazione.forEach(n => {
+    html += n + "<br>";
+  });
 
-html+=nome+"<br>";
-
-});
-
-document.getElementById("rotazione").innerHTML=html;
-
+  document.getElementById("rotazione").innerHTML = html;
 }
 
 
+// =====================
 // STORICO
-
+// =====================
 function formatDate(dateString){
-
-const parts = dateString.split("-");
-
-return parts[2] + "-" + parts[1] + "-" + parts[0];
-
+  const parts = dateString.split("-");
+  return parts[2] + "-" + parts[1] + "-" + parts[0];
 }
 
 function renderStorico(){
 
-const calendario=document.getElementById("calendario");
+  const calendario = document.getElementById("calendario");
 
-db.collection("carpool")
+  db.collection("carpool")
+    .orderBy("timestamp","desc")
+    .limit(90)
+    .get()
+    .then(snapshot => {
 
-.orderBy("timestamp","desc")
+      calendario.innerHTML = "";
 
-.limit(90)
+      snapshot.forEach(doc => {
 
-.get()
+        const data = doc.id;
+        const info = doc.data();
 
-.then(snapshot=>{
+        const driver = info.driver || "—";
+        const commento = info.commento || "";
 
-calendario.innerHTML="";
+        const passeggeri = (info.presenti || []).filter(p => p !== driver);
 
-snapshot.forEach(doc=>{
-
-const data=doc.id;
-const info=doc.data();
-
-const driver=info.driver||"—";
-
-const commento = info.commento || "";
-
-const passeggeri=
-(info.presenti||[]).filter(p=>p!==driver);
-
-calendario.innerHTML+=`
-
-<div style="margin-bottom:10px">
-
-<b>${formatDate(data)}</b> — 🚗 ${driver}<br>
-
-👥 Passeggeri: ${passeggeri.join(", ")}
-
-${commento ? "<br>💬 " + commento : ""}
-
-</div>
-
-`;
-
-});
-
-});
-
+        calendario.innerHTML += `
+          <div style="margin-bottom:10px">
+            <b>${formatDate(data)}</b> — 🚗 ${driver}<br>
+            👥 Passeggeri: ${passeggeri.join(", ")}
+            ${commento ? "<br>💬 " + commento : ""}
+          </div>
+        `;
+      });
+    });
 }
 
 
+// =====================
 // AVVIO
-
+// =====================
 renderStorico();
-
