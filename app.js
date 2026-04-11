@@ -1,3 +1,7 @@
+
+console.log("APP JS CARICATO");
+alert("APP AVVIATA");
+
 // =====================
 // FIREBASE SAFE INIT
 // =====================
