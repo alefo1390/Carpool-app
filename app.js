@@ -1,10 +1,3 @@
-window.onerror = function(message, source, lineno, colno, error) {
-  document.body.innerHTML +=
-    "<div style='position:fixed;bottom:0;background:red;color:white;padding:10px;z-index:9999'>" +
-    "ERRORE: " + message +
-    "</div>";
-};
-
 // FIREBASE
 
 const firebaseConfig = {
