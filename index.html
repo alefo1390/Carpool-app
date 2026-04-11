@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -12,7 +10,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
@@ -22,36 +19,37 @@
 <h2>Seleziona chi è presente oggi</h2>
 
 <div class="presenze">
-
 <label><input type="checkbox" value="Alessio"> Alessio</label>
 <label><input type="checkbox" value="Sebastiano"> Sebastiano</label>
 <label><input type="checkbox" value="Andrea"> Andrea</label>
 <label><input type="checkbox" value="Francesca"> Francesca</label>
 <label><input type="checkbox" value="Rosario"> Rosario</label>
-
 </div>
 
-  <textarea id="commento" placeholder="💬 Scrivi un commento (facoltativo)"></textarea>
+<textarea id="commento" placeholder="💬 Commento"></textarea>
 
 <button onclick="calcolaGuidatore()">🚗 Calcola guidatore</button>
-
 <button onclick="oggiNonVengo()">❌ Oggi non vengo</button>
-
 <button onclick="simulaDomani()">🔮 Simula domani</button>
-
 <button onclick="apriDashboard()">📊 Dashboard</button>
 
 <div id="risultato"></div>
-
-<h2>🔁 Rotazione attiva</h2>
 <div id="rotazione"></div>
-
-<hr>
-
-<h2>📅 Storico viaggi</h2>
 <div id="calendario"></div>
 
 <div id="dashboardPopup" class="popup"></div>
+
+<!-- 🔥 FIREBASE CONFIG (OBBLIGATORIO PRIMA DI APP.JS) -->
+<script>
+const firebaseConfig = {
+  apiKey:"AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
+  authDomain:"carpool-app-3e8d5.firebaseapp.com",
+  projectId:"carpool-app-3e8d5",
+  storageBucket:"carpool-app-3e8d5.firebasestorage.app",
+  messagingSenderId:"462538199019",
+  appId:"1:462538199019:web:9e8127f6ad1642d53393ae"
+};
+</script>
 
 <script src="app.js"></script>
 
