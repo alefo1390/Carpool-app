@@ -431,3 +431,5 @@ calendario.innerHTML+=`
 
 
 // AVVIO
+
+renderStorico();
