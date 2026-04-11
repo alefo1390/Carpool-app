@@ -127,8 +127,7 @@ const presenti=
 Array.from(document.querySelectorAll("input:checked"))
 .map(c=>c.value);
 
-const commentoInput = document.getElementById("commento");
-const commento = commentoInput ? commentoInput.value : "";
+const commento = document.getElementById("commento").value;
 
 if(presenti.length===0) return;
 
