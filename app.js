@@ -1,42 +1,48 @@
-// =====================
 // FIREBASE
-// =====================
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
 
-console.log("🚀 App avviata");
+const firebaseConfig = {
 
+apiKey:"AIzaSyDTCYs2tS8wKzMDVW4BgBAD0SkmswfLmgI",
+authDomain:"carpool-app-3e8d5.firebaseapp.com",
+projectId:"carpool-app-3e8d5",
+storageBucket:"carpool-app-3e8d5.firebasestorage.app",
+messagingSenderId:"462538199019",
+appId:"1:462538199019:web:9e8127f6ad1642d53393ae"
 
-// =====================
-// DATA OGGI
-// =====================
-function getToday(){
-  const d = new Date();
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().split("T")[0];
-}
-
-
-// =====================
-// SIGLE
-// =====================
-const sigle = {
-  Alessio:"A",
-  Sebastiano:"S",
-  Andrea:"AN",
-  Francesca:"F",
-  Rosario:"R"
 };
 
-const ordineSigle = ["A","S","AN","F","R"];
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 
-// =====================
-// ROTAZIONI (TUO ORIGINALE)
-// =====================
-const rotazioni = {
+// DATA OGGI
+
+function getToday(){
+
+const d=new Date();
+return d.toISOString().split("T")[0];
+
+}
+
+
+// SIGLE
+
+const sigle={
+
+Alessio:"A",
+Sebastiano:"S",
+Andrea:"AN",
+Francesca:"F",
+Rosario:"R"
+
+};
+
+const ordineSigle=["A","S","AN","F","R"];
+
+
+// ROTAZIONI
+
+const rotazioni={
 
 "A":["Alessio"],
 "S":["Sebastiano"],
@@ -82,230 +88,346 @@ const rotazioni = {
 };
 
 
-// =====================
-// TROVA ROTAZIONE (FIX)
-// =====================
+// TROVA ROTAZIONE
+
 function trovaRotazione(presenti){
 
-  const siglePresenti = presenti.map(n => sigle[n]);
+const siglePresenti=presenti.map(n=>sigle[n]);
 
-  const chiave = ordineSigle
-    .filter(s => siglePresenti.includes(s))
-    .join("-");
+const chiave=ordineSigle
+.filter(s=>siglePresenti.includes(s))
+.join("-");
 
-  let sequenza = rotazioni[chiave];
+return{
 
-  if(!sequenza){
-    console.warn("⚠️ Rotazione mancante:", chiave);
+chiave:chiave,
+sequenza:rotazioni[chiave]
 
-    // 🔥 fallback → usa presenti (evita crash)
-    sequenza = [...presenti];
-  }
+};
 
-  return { chiave, sequenza };
 }
 
 
-// =====================
 // CALCOLA GUIDATORE
-// =====================
+
 function calcolaGuidatore(){
 
-  const today = getToday();
+const today=getToday();
 
-  db.collection("carpool").doc(today).get().then(doc => {
+db.collection("carpool").doc(today).get().then(doc=>{
 
-    if(doc.exists){
-      alert("Guidatore già calcolato");
-      return;
-    }
+if(doc.exists){
 
-    const presenti = Array.from(document.querySelectorAll("input:checked"))
-      .map(c => c.value);
+alert("Guidatore già calcolato");
+return;
 
-    if(presenti.length === 0) return;
+}
 
-    const {chiave, sequenza} = trovaRotazione(presenti);
+const presenti=
+Array.from(document.querySelectorAll("input:checked"))
+.map(c=>c.value);
 
-    db.collection("rotazioni").doc(chiave).get().then(doc => {
+if(presenti.length===0) return;
 
-      let index = 0;
+const {chiave,sequenza}=trovaRotazione(presenti);
 
-      if(doc.exists){
-        index = doc.data().index || 0;
-      }
+db.collection("rotazioni").doc(chiave).get().then(doc=>{
 
-      if(!sequenza || sequenza.length === 0){
-        alert("Errore rotazione");
-        return;
-      }
+let index=0;
 
-      const driver = sequenza[index % sequenza.length];
-      const passeggeri = presenti.filter(p => p !== driver);
+if(doc.exists){
 
-      const nextIndex = (index + 1) % sequenza.length;
+index=doc.data().index||0;
 
-      db.collection("rotazioni").doc(chiave).set({
-        index: nextIndex
-      });
+}
 
-      db.collection("carpool").doc(today).set({
-        driver,
-        presenti,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
+const driver=sequenza[index];
 
-      document.getElementById("risultato").innerHTML =
-        `🚗 Guidatore: ${driver}<br>
-         👥 Passeggeri: ${passeggeri.join(", ")}`;
+const passeggeri=presenti.filter(p=>p!==driver);
 
-      mostraRotazione(sequenza);
-      renderStorico();
+const nextIndex=(index+1)%sequenza.length;
 
-    });
+db.collection("rotazioni").doc(chiave).set({
 
-  });
+index:nextIndex
+
+});
+
+db.collection("carpool").doc(today).set({
+
+driver:driver,
+presenti:presenti,
+timestamp:firebase.firestore.FieldValue.serverTimestamp()
+
+});
+
+document.getElementById("risultato").innerHTML=
+
+`🚗 Guidatore: ${driver}<br>
+👥 Passeggeri: ${passeggeri.join(", ")}`;
+
+mostraRotazione(sequenza);
+
+renderStorico();
+
+});
+
+});
 
 }
 
 
-// =====================
 // SIMULA DOMANI
-// =====================
+
 function simulaDomani(){
 
-  const presenti = Array.from(document.querySelectorAll("input:checked"))
-    .map(c => c.value);
+const presenti=
+Array.from(document.querySelectorAll("input:checked"))
+.map(c=>c.value);
 
-  if(presenti.length === 0) return;
+if(presenti.length===0) return;
 
-  const {chiave, sequenza} = trovaRotazione(presenti);
+const {chiave,sequenza}=trovaRotazione(presenti);
 
-  db.collection("rotazioni").doc(chiave).get().then(doc => {
+db.collection("rotazioni").doc(chiave).get().then(doc=>{
 
-    let index = 0;
+let index=0;
 
-    if(doc.exists){
-      index = doc.data().index || 0;
-    }
+if(doc.exists){
 
-    const driver = sequenza[index % sequenza.length];
-    const passeggeri = presenti.filter(p => p !== driver);
+index=doc.data().index||0;
 
-    document.getElementById("risultato").innerHTML =
-      `🔮 Domani guiderebbe: ${driver}<br>
-       👥 Passeggeri: ${passeggeri.join(", ")}`;
+}
 
-  });
+const driver=sequenza[index];
+
+const passeggeri=presenti.filter(p=>p!==driver);
+
+document.getElementById("risultato").innerHTML=
+
+`🔮 Domani guiderebbe: ${driver}<br>
+👥 Passeggeri: ${passeggeri.join(", ")}`;
+
+});
 
 }
 
 
-// =====================
 // OGGI NON VENGO
-// =====================
+
 function oggiNonVengo(){
 
-  const today = getToday();
+const today=getToday();
 
-  db.collection("carpool").doc(today).get().then(doc => {
+db.collection("carpool").doc(today).get().then(doc=>{
 
-    if(!doc.exists) return;
+if(!doc.exists) return;
 
-    const presenti = doc.data().presenti;
+const presenti=doc.data().presenti;
 
-    const {chiave, sequenza} = trovaRotazione(presenti);
+const {chiave,sequenza}=trovaRotazione(presenti);
 
-    db.collection("rotazioni").doc(chiave).get().then(rotDoc => {
+db.collection("rotazioni").doc(chiave).get().then(rotDoc=>{
 
-      if(rotDoc.exists){
+if(rotDoc.exists){
 
-        let index = rotDoc.data().index || 0;
+let index=rotDoc.data().index||0;
 
-        let prevIndex = index - 1;
-        if(prevIndex < 0){
-          prevIndex = sequenza.length - 1;
-        }
+let prevIndex=index-1;
 
-        db.collection("rotazioni").doc(chiave).set({
-          index: prevIndex
-        });
-      }
+if(prevIndex<0){
 
-      db.collection("carpool").doc(today).delete();
+prevIndex=sequenza.length-1;
 
-      document.getElementById("risultato").innerHTML =
-        "❌ Viaggio cancellato";
+}
 
-      renderStorico();
+db.collection("rotazioni").doc(chiave).set({
 
-    });
+index:prevIndex
 
-  });
+});
+
+}
+
+db.collection("carpool").doc(today).delete();
+
+document.getElementById("risultato").innerHTML="❌ Viaggio cancellato";
+
+renderStorico();
+
+});
+
+});
 
 }
 
 
-// =====================
+// DASHBOARD
+
+function apriDashboard(){
+
+let html=`
+
+<h2>📊 Dashboard rotazioni</h2>
+
+<table>
+
+<tr>
+
+<th>Rotazione</th>
+<th>Ultimo 🚗</th>
+<th>Prossimo</th>
+
+</tr>
+
+`;
+
+const chiavi=Object.keys(rotazioni);
+
+let promises=[];
+
+chiavi.forEach(chiave=>{
+
+promises.push(
+
+db.collection("rotazioni").doc(chiave).get().then(doc=>{
+
+const sequenza=rotazioni[chiave];
+
+let index=0;
+let ultimo="—";
+let prossimo=sequenza[0];
+
+if(doc.exists){
+
+index=doc.data().index||0;
+
+prossimo=sequenza[index];
+
+ultimo=index===0
+? sequenza[sequenza.length-1]
+: sequenza[index-1];
+
+}
+
+html+=`
+
+<tr>
+
+<td>${chiave}</td>
+<td>${ultimo}</td>
+<td>${prossimo}</td>
+
+</tr>
+
+`;
+
+})
+
+);
+
+});
+
+Promise.all(promises).then(()=>{
+
+html+=`
+
+</table>
+
+<br>
+
+<button onclick="chiudiDashboard()">Chiudi</button>
+
+`;
+
+const popup=document.getElementById("dashboardPopup");
+
+popup.innerHTML=`<div class="popup-content">${html}</div>`;
+
+popup.style.display="flex";
+
+});
+
+}
+
+
+function chiudiDashboard(){
+
+document.getElementById("dashboardPopup").style.display="none";
+
+}
+
+
 // ROTAZIONE VISIVA
-// =====================
+
 function mostraRotazione(rotazione){
 
-  let html = "<h3>🔁 Rotazione attiva</h3>";
+let html="<h3>🔁 Rotazione attiva</h3>";
 
-  rotazione.forEach(nome => {
-    html += nome + "<br>";
-  });
+rotazione.forEach(nome=>{
 
-  document.getElementById("rotazione").innerHTML = html;
+html+=nome+"<br>";
+
+});
+
+document.getElementById("rotazione").innerHTML=html;
+
 }
 
 
-// =====================
 // STORICO
-// =====================
+
 function formatDate(dateString){
-  const parts = dateString.split("-");
-  return parts[2] + "-" + parts[1] + "-" + parts[0];
+
+const parts = dateString.split("-");
+
+return parts[2] + "-" + parts[1] + "-" + parts[0];
+
 }
 
 function renderStorico(){
 
-  const calendario = document.getElementById("calendario");
+const calendario=document.getElementById("calendario");
 
-  db.collection("carpool")
-    .orderBy("timestamp","desc")
-    .limit(90)
-    .get()
-    .then(snapshot => {
+db.collection("carpool")
 
-      calendario.innerHTML = "";
+.orderBy("timestamp","desc")
 
-      snapshot.forEach(doc => {
+.limit(90)
 
-        const data = doc.id;
-        const info = doc.data();
+.get()
 
-        const driver = info.driver || "—";
+.then(snapshot=>{
 
-        const passeggeri =
-          (info.presenti || []).filter(p => p !== driver);
+calendario.innerHTML="";
 
-        calendario.innerHTML += `
-        <div style="margin-bottom:10px">
-          <b>${formatDate(data)}</b> — 🚗 ${driver}<br>
-          👥 Passeggeri: ${passeggeri.join(", ")}
-        </div>
-        `;
+snapshot.forEach(doc=>{
 
-      });
+const data=doc.id;
+const info=doc.data();
 
-    });
+const driver=info.driver||"—";
+
+const passeggeri=
+(info.presenti||[]).filter(p=>p!==driver);
+
+calendario.innerHTML+=`
+
+<div style="margin-bottom:10px">
+
+<b>${formatDate(data)}</b> — 🚗 ${driver}<br>
+
+👥 Passeggeri: ${passeggeri.join(", ")}
+
+</div>
+
+`;
+
+});
+
+});
 
 }
 
 
-// =====================
 // AVVIO
-// =====================
-renderStorico();
