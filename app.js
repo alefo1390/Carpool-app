@@ -25,68 +25,96 @@ return d.toISOString().split("T")[0];
 }
 
 
+
 // SIGLE
-
-const sigle={
-
-Alessio:"A",
-Sebastiano:"S",
-Andrea:"AN",
-Francesca:"F",
-Rosario:"R"
-
+const sigle = {
+  Alessio: "A",
+  Sebastiano: "S",
+  Andrea: "AN",
+  Francesca: "F",
+  Rosario: "R",
+  Vincenzo: "V"
 };
 
-const ordineSigle=["A","S","AN","F","R"];
-
+const ordineSigle = ["A", "S", "AN", "F", "R", "V"];
 
 // ROTAZIONI
+const rotazioni = {
+  // Singoli
+  "A": ["Alessio"],
+  "S": ["Sebastiano"],
+  "AN": ["Andrea"],
+  "F": ["Francesca"],
+  "R": ["Rosario"],
+  "V": ["Vincenzo"],
 
-const rotazioni={
+  // Coppie
+  "A-S": ["Sebastiano", "Alessio"],
+  "A-AN": ["Alessio", "Andrea"],
+  "A-F": ["Francesca", "Alessio"],
+  "A-R": ["Rosario", "Alessio"],
+  "S-AN": ["Andrea", "Sebastiano"],
+  "S-F": ["Francesca", "Sebastiano"],
+  "S-R": ["Rosario", "Sebastiano"],
+  "AN-F": ["Francesca", "Andrea"],
+  "AN-R": ["Andrea", "Rosario"],
+  "F-R": ["Francesca", "Rosario"],
+  "A-V": ["Vincenzo", "Alessio"],
+  "S-V": ["Vincenzo", "Sebastiano"],
+  "AN-V": ["Vincenzo", "Andrea"],
+  "F-V": ["Vincenzo", "Francesca"],
+  "R-V": ["Vincenzo", "Rosario"],
 
-"A":["Alessio"],
-"S":["Sebastiano"],
-"AN":["Andrea"],
-"F":["Francesca"],
-"R":["Rosario"],
+  // Trii
+  "A-S-AN": ["Sebastiano", "Andrea", "Alessio"],
+  "A-S-F": ["Francesca", "Sebastiano", "Alessio"],
+  "A-S-R": ["Sebastiano", "Rosario", "Alessio"],
+  "A-AN-F": ["Andrea", "Francesca", "Alessio"],
+  "A-AN-R": ["Alessio", "Andrea", "Rosario"],
+  "A-F-R": ["Rosario", "Alessio", "Francesca"],
+  "S-AN-F": ["Andrea", "Sebastiano", "Francesca"],
+  "S-AN-R": ["Sebastiano", "Rosario", "Andrea"],
+  "S-F-R": ["Sebastiano", "Rosario", "Francesca"],
+  "AN-F-R": ["Andrea", "Francesca", "Rosario"],
+  "A-S-V": ["Sebastiano", "Vincenzo", "Alessio"],
+  "A-AN-V": ["Andrea", "Vincenzo", "Alessio"],
+  "A-F-V": ["Francesca", "Vincenzo", "Alessio"],
+  "A-R-V": ["Rosario", "Vincenzo", "Alessio"],
+  "S-AN-V": ["Andrea", "Vincenzo", "Sebastiano"],
+  "S-F-V": ["Francesca", "Vincenzo", "Sebastiano"],
+  "S-R-V": ["Rosario", "Vincenzo", "Sebastiano"],
+  "AN-F-V": ["Andrea", "Francesca", "Vincenzo"],
+  "AN-R-V": ["Andrea", "Rosario", "Vincenzo"],
+  "F-R-V": ["Francesca", "Rosario", "Vincenzo"],
 
-"A-S":["Sebastiano","Alessio"],
-"A-AN":["Alessio","Andrea"],
-"A-F":["Francesca","Alessio"],
-"A-R":["Rosario","Alessio"],
+  // Quartetti
+  "A-S-AN-F": ["Sebastiano", "Francesca", "Alessio", "Andrea"],
+  "A-S-AN-R": ["Sebastiano", "Alessio", "Andrea", "Rosario"],
+  "A-S-F-R": ["Alessio", "Sebastiano", "Francesca", "Rosario"],
+  "A-AN-F-R": ["Andrea", "Francesca", "Rosario", "Alessio"],
+  "S-AN-F-R": ["Francesca", "Andrea", "Rosario", "Sebastiano"],
+  "A-S-AN-V": ["Sebastiano", "Andrea", "Vincenzo", "Alessio"],
+  "A-S-F-V": ["Sebastiano", "Francesca", "Vincenzo", "Alessio"],
+  "A-S-R-V": ["Sebastiano", "Rosario", "Vincenzo", "Alessio"],
+  "A-AN-F-V": ["Andrea", "Francesca", "Vincenzo", "Alessio"],
+  "A-AN-R-V": ["Andrea", "Rosario", "Vincenzo", "Alessio"],
+  "A-F-R-V": ["Francesca", "Rosario", "Vincenzo", "Alessio"],
+  "S-AN-F-V": ["Andrea", "Francesca", "Vincenzo", "Sebastiano"],
+  "S-AN-R-V": ["Andrea", "Rosario", "Vincenzo", "Sebastiano"],
+  "S-F-R-V": ["Francesca", "Rosario", "Vincenzo", "Sebastiano"],
+  "AN-F-R-V": ["Andrea", "Francesca", "Rosario", "Vincenzo"],
 
-"S-AN":["Andrea","Sebastiano"],
-"S-F":["Francesca","Sebastiano"],
-"S-R":["Rosario","Sebastiano"],
+  // Quintetti
+  "A-S-AN-F-R": ["Francesca", "Andrea", "Rosario", "Alessio", "Sebastiano"],
+  "A-S-AN-F-V": ["Sebastiano", "Francesca", "Vincenzo", "Alessio", "Andrea"],
+  "A-S-AN-R-V": ["Sebastiano", "Rosario", "Vincenzo", "Alessio", "Andrea"],
+  "A-S-F-R-V": ["Sebastiano", "Francesca", "Rosario", "Vincenzo", "Alessio"],
+  "A-AN-F-R-V": ["Andrea", "Francesca", "Rosario", "Vincenzo", "Alessio"],
+  "S-AN-F-R-V": ["Andrea", "Francesca", "Rosario", "Vincenzo", "Sebastiano"],
 
-"AN-F":["Francesca","Andrea"],
-"AN-R":["Andrea","Rosario"],
-"F-R":["Francesca","Rosario"],
-
-"A-S-AN":["Sebastiano","Andrea","Alessio"],
-"A-S-F":["Francesca","Sebastiano","Alessio"],
-"A-S-R":["Sebastiano","Rosario","Alessio"],
-
-"A-AN-F":["Andrea","Francesca","Alessio"],
-"A-AN-R":["Alessio","Andrea","Rosario"],
-"A-F-R":["Rosario","Alessio","Francesca"],
-
-"S-AN-F":["Andrea","Sebastiano","Francesca"],
-"S-AN-R":["Sebastiano","Rosario","Andrea"],
-"S-F-R":["Sebastiano","Rosario","Francesca"],
-
-"AN-F-R":["Andrea","Francesca","Rosario"],
-
-"A-S-AN-F":["Sebastiano","Francesca","Alessio","Andrea"],
-"A-S-AN-R":["Sebastiano","Alessio","Andrea","Rosario"],
-"A-S-F-R":["Alessio","Sebastiano","Francesca","Rosario"],
-"A-AN-F-R":["Andrea","Francesca","Rosario","Alessio"],
-"S-AN-F-R":["Francesca","Andrea","Rosario","Sebastiano"],
-
-"A-S-AN-F-R":["Francesca","Andrea","Rosario","Alessio","Sebastiano"]
-
+  // Gruppo completo (6 persone)
+  "A-S-AN-F-R-V": ["Francesca", "Andrea", "Rosario", "Vincenzo", "Alessio", "Sebastiano"]
 };
-
 
 // TROVA ROTAZIONE
 
