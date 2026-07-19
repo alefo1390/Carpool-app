@@ -106,8 +106,8 @@ const rotazioni = {
 
   // Quintetti
   "A-S-AN-F-R": ["Francesca", "Andrea", "Rosario", "Alessio", "Sebastiano"],
-  "A-S-AN-F-V": ["Sebastiano", "Francesca", "Vincenzo", "Alessio", "Andrea"],
-  "A-S-AN-R-V": ["Sebastiano", "Rosario", "Vincenzo", "Alessio", "Andrea"],
+  "A-S-AN-F-V": ["Vincenzo", "Francesca", "Sebastiano", "Alessio", "Andrea"],
+  "A-S-AN-R-V": ["Vincenzo", "Rosario", "Sebastiano", "Alessio", "Andrea"],
   "A-S-F-R-V": ["Sebastiano", "Francesca", "Rosario", "Vincenzo", "Alessio"],
   "A-AN-F-R-V": ["Andrea", "Francesca", "Rosario", "Vincenzo", "Alessio"],
   "S-AN-F-R-V": ["Andrea", "Francesca", "Rosario", "Vincenzo", "Sebastiano"],
