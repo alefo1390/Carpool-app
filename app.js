@@ -289,7 +289,7 @@ renderStorico();
 
 }
 
-// DASHBOARD (NUOVA VERSIONE)
+// DASHBOARD (CORRETTA PER NOMI ESTESI)
 async function apriDashboard() {
   const popup = document.getElementById("dashboardPopup");
   popup.style.display = "flex";
@@ -320,17 +320,25 @@ async function apriDashboard() {
 
     chiavi.forEach((chiave, i) => {
       const doc = docs[i];
-      const sequenza = rotazioni[chiave];
+      // Garantiamo che recuperi l'array dei NOMI (es. ["Sebastiano", "Francesca", ...])
+      const sequenzaNomi = rotazioni[chiave]; 
+      
       let index = 0;
       let ultimo = "—";
-      let prossimo = sequenza[0];
+      let prossimo = sequenzaNomi ? sequenzaNomi[0] : "—";
 
       if (doc && doc.exists) {
         index = doc.data().index || 0;
-        prossimo = sequenza[index];
-        ultimo = (index === 0) 
-          ? sequenza[sequenza.length - 1] 
-          : sequenza[index - 1];
+      }
+
+      if (sequenzaNomi && sequenzaNomi.length > 0) {
+        // Garantiamo che l'indice rientri nei limiti dell'array
+        const safeIndex = index % sequenzaNomi.length;
+        prossimo = sequenzaNomi[safeIndex];
+
+        // Calcoliamo l'ultimo guidatore
+        const prevIndex = (safeIndex - 1 + sequenzaNomi.length) % sequenzaNomi.length;
+        ultimo = sequenzaNomi[prevIndex];
       }
 
       listHtml += `
@@ -358,9 +366,6 @@ async function apriDashboard() {
   }
 }
 
-function chiudiDashboard() {
-  document.getElementById("dashboardPopup").style.display = "none";
-}
 
 
 
