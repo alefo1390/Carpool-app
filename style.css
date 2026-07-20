@@ -83,81 +83,170 @@ font-size:18px;
 line-height:1.6;
 }
 
-/* POPUP DASHBOARD */
+/* POPUP E DASHBOARD */
 
-.popup{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.5);
-display:none;
-align-items:center;
-justify-content:center;
-z-index:1000;
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
-.popup-content{
-background:white;
-padding:25px;
-border-radius:15px;
-width:90%;
-max-width:420px;
-max-height:80vh;
-overflow:auto;
-box-shadow:0 10px 25px rgba(0,0,0,0.3);
+.dashboard-modal {
+  max-width: 480px;
+  width: 92%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  background: #ffffff;
+  text-align: left;
 }
 
-.popup-content h2{
-margin-top:0;
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
 }
 
-.popup-content table{
-width:100%;
-margin-top:10px;
-border-collapse:collapse;
+.dashboard-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #212529;
 }
 
-.popup-content th{
-text-align:left;
-padding:6px;
-border-bottom:1px solid #ddd;
+.btn-close-icon {
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 0;
+  width: auto;
+  box-shadow: none;
 }
 
-.popup-content td{
-padding:6px;
+.dashboard-list {
+  padding: 14px 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.popup-content button{
-margin-top:20px;
-background:#57a768;
+.rotation-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background-color: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
 }
 
-#calendario b{
-color:#222;
-font-size:16px;
+.rotation-badge {
+  background-color: #2b2d42;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 8px 10px;
+  border-radius: 10px;
+  min-width: 65px;
+  text-align: center;
+  word-break: break-word;
 }
 
-#calendario{
-color:black;
+.rotation-details {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  justify-content: space-between;
 }
 
-#calendario div{
-background:white;
-padding:10px;
-border-radius:10px;
-margin-bottom:10px;
+.driver-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  border-radius: 10px;
 }
 
-textarea{
-width:90%;
-max-width:320px;
-height:80px;
-margin:15px auto;
-display:block;
-border-radius:12px;
-border:1px solid #ccc;
-padding:10px;
-font-size:16px;
+.driver-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 2px;
 }
+
+.driver-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* ULTIMO GUIDATORE (Arancione) */
+.driver-prev {
+  background-color: #fff3e0;
+  border: 1px solid #ffe0b2;
+}
+.driver-prev .driver-label {
+  color: #e65100;
+}
+.driver-prev .driver-name {
+  color: #bf360c;
+}
+
+/* PROSSIMO GUIDATORE (Verde) */
+.driver-next {
+  background-color: #e8f5e9;
+  border: 1px solid #c8e6c9;
+}
+.driver-next .driver-label {
+  color: #2e7d32;
+}
+.driver-next .driver-name {
+  color: #1b5e20;
+}
+
+.dashboard-footer {
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  text-align: right;
+}
+
+.btn-secondary {
+  width: auto;
+  padding: 8px 18px;
+  margin: 0 0 0 auto;
+  background-color: #6c757d;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-block;
+  box-shadow: none;
+}
+
+.loading-text, .error-text {
+  text-align: center;
+  padding: 20px;
+  color: #6c757d;
+}
+
