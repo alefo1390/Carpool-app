@@ -374,6 +374,22 @@ function chiudiDashboard() {
   }
 }
 
+// ROTAZIONE VISIVA
+
+function mostraRotazione(rotazione){
+
+let html="<h3>🔄 Rotazione attiva</h3>";
+
+rotazione.forEach(nome=>{
+
+html+=nome+"<br>";
+
+});
+
+document.getElementById("rotazione").innerHTML=html;
+
+}
+
 
 
 
