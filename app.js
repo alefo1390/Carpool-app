@@ -289,16 +289,22 @@ renderStorico();
 
 }
 
-// DASHBOARD (Tabella con nomi per esteso e chiusura funzionante)
+// DASHBOARD (Grafica pulita e sfondo bianco garantito)
 function apriDashboard() {
+  const popup = document.getElementById("dashboardPopup");
+
   let html = `
-    <h2>📊 Dashboard rotazioni</h2>
-    <table>
-      <tr>
-        <th>Rotazione</th>
-        <th>Ultimo 🚗</th>
-        <th>Prossimo</th>
-      </tr>
+    <div style="background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 420px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; color: #333;">
+      <h2 style="margin-top: 0; font-size: 22px; color: #222;">📊 Dashboard rotazioni</h2>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 15px;">
+        <thead>
+          <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+            <th style="padding: 8px;">Rotazione</th>
+            <th style="padding: 8px;">Ultimo 🚗</th>
+            <th style="padding: 8px;">Prossimo</th>
+          </tr>
+        </thead>
+        <tbody>
   `;
 
   const chiavi = Object.keys(rotazioni);
@@ -311,7 +317,7 @@ function apriDashboard() {
 
         let index = 0;
         let ultimo = "—";
-        let prossimo = sequenza[0];
+        let prossimo = sequenza ? sequenza[0] : "—";
 
         if (doc.exists) {
           index = doc.data().index || 0;
@@ -323,10 +329,10 @@ function apriDashboard() {
         }
 
         html += `
-          <tr>
-            <td><b>${chiave}</b></td>
-            <td>${ultimo}</td>
-            <td>${prossimo}</td>
+          <tr style="border-bottom: 1px solid #eee; text-align: left;">
+            <td style="padding: 8px; font-weight: bold;">${chiave}</td>
+            <td style="padding: 8px; color: #d97706;">${ultimo}</td>
+            <td style="padding: 8px; color: #059669; font-weight: 600;">${prossimo}</td>
           </tr>
         `;
       })
@@ -335,16 +341,28 @@ function apriDashboard() {
 
   Promise.all(promises).then(() => {
     html += `
+        </tbody>
       </table>
       <br>
-      <button type="button" id="btnChiudiDashboard">Chiudi</button>
+      <button id="btnChiudiDashboard" style="width: 100%; padding: 12px; background: #57a768; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer;">Chiudi</button>
+    </div>
     `;
 
-    const popup = document.getElementById("dashboardPopup");
-    popup.innerHTML = `<div class="popup-content">${html}</div>`;
+    // Stili per l'overlay scuro che copre la pagina
+    popup.style.position = "fixed";
+    popup.style.top = "0";
+    popup.style.left = "0";
+    popup.style.width = "100%";
+    popup.style.height = "100%";
+    popup.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
     popup.style.display = "flex";
+    popup.style.alignItems = "center";
+    popup.style.justifyContent = "center";
+    popup.style.zIndex = "9999";
 
-    // Assegniamo l'evento direttamente dopo aver inserito l'HTML
+    popup.innerHTML = html;
+
+    // Aggancio sicuro del tasto Chiudi
     document.getElementById("btnChiudiDashboard").onclick = chiudiDashboard;
   });
 }
@@ -355,6 +373,7 @@ function chiudiDashboard() {
     popup.style.display = "none";
   }
 }
+
 
 
 
