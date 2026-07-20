@@ -289,17 +289,17 @@ renderStorico();
 
 }
 
-// DASHBOARD (Grafica pulita e sfondo bianco garantito)
+// DASHBOARD (Mostra i nomi al posto della sigla della rotazione)
 function apriDashboard() {
   const popup = document.getElementById("dashboardPopup");
 
   let html = `
-    <div style="background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 420px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; color: #333;">
+    <div style="background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 440px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; color: #333;">
       <h2 style="margin-top: 0; font-size: 22px; color: #222;">📊 Dashboard rotazioni</h2>
-      <table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 15px;">
+      <table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px;">
         <thead>
           <tr style="border-bottom: 2px solid #ddd; text-align: left;">
-            <th style="padding: 8px;">Rotazione</th>
+            <th style="padding: 8px;">Gruppo Rotazione</th>
             <th style="padding: 8px;">Ultimo 🚗</th>
             <th style="padding: 8px;">Prossimo</th>
           </tr>
@@ -313,7 +313,7 @@ function apriDashboard() {
   chiavi.forEach(chiave => {
     promises.push(
       db.collection("rotazioni").doc(chiave).get().then(doc => {
-        const sequenza = rotazioni[chiave];
+        const sequenza = rotazioni[chiave]; // Array dei nomi, es: ["Sebastiano", "Francesca", "Alessio", "Andrea"]
 
         let index = 0;
         let ultimo = "—";
@@ -328,11 +328,14 @@ function apriDashboard() {
             : sequenza[index - 1];
         }
 
+        // Unisce i nomi separandoli con una virgola
+        const nomiGruppo = sequenza ? sequenza.join(", ") : chiave;
+
         html += `
           <tr style="border-bottom: 1px solid #eee; text-align: left;">
-            <td style="padding: 8px; font-weight: bold;">${chiave}</td>
-            <td style="padding: 8px; color: #d97706;">${ultimo}</td>
-            <td style="padding: 8px; color: #059669; font-weight: 600;">${prossimo}</td>
+            <td style="padding: 8px; font-size: 13px; color: #555;">${nomiGruppo}</td>
+            <td style="padding: 8px; color: #d97706; font-weight: 500;">${ultimo}</td>
+            <td style="padding: 8px; color: #059669; font-weight: bold;">${prossimo}</td>
           </tr>
         `;
       })
@@ -348,7 +351,6 @@ function apriDashboard() {
     </div>
     `;
 
-    // Stili per l'overlay scuro che copre la pagina
     popup.style.position = "fixed";
     popup.style.top = "0";
     popup.style.left = "0";
@@ -362,17 +364,10 @@ function apriDashboard() {
 
     popup.innerHTML = html;
 
-    // Aggancio sicuro del tasto Chiudi
     document.getElementById("btnChiudiDashboard").onclick = chiudiDashboard;
   });
 }
 
-function chiudiDashboard() {
-  const popup = document.getElementById("dashboardPopup");
-  if (popup) {
-    popup.style.display = "none";
-  }
-}
 
 // ROTAZIONE VISIVA
 
