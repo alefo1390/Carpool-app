@@ -289,102 +289,73 @@ renderStorico();
 
 }
 
-// DASHBOARD (CORRETTA PER NOMI ESTESI)
-async function apriDashboard() {
-  const popup = document.getElementById("dashboardPopup");
-  popup.style.display = "flex";
-
-  popup.innerHTML = `
-    <div class="popup-content dashboard-modal">
-      <div class="dashboard-header">
-        <h2>📊 Dashboard Rotazioni</h2>
-        <button class="btn-close-icon" onclick="chiudiDashboard()">✕</button>
-      </div>
-      <div id="dashboardList" class="dashboard-list">
-        <p class="loading-text">Caricamento rotazioni...</p>
-      </div>
-      <div class="dashboard-footer">
-        <button class="btn-secondary" onclick="chiudiDashboard()">Chiudi</button>
-      </div>
-    </div>
+// DASHBOARD (Tabella con nomi per esteso e chiusura funzionante)
+function apriDashboard() {
+  let html = `
+    <h2>📊 Dashboard rotazioni</h2>
+    <table>
+      <tr>
+        <th>Rotazione</th>
+        <th>Ultimo 🚗</th>
+        <th>Prossimo</th>
+      </tr>
   `;
 
   const chiavi = Object.keys(rotazioni);
+  let promises = [];
 
-  try {
-    const docs = await Promise.all(
-      chiavi.map(chiave => db.collection("rotazioni").doc(chiave).get())
+  chiavi.forEach(chiave => {
+    promises.push(
+      db.collection("rotazioni").doc(chiave).get().then(doc => {
+        const sequenza = rotazioni[chiave];
+
+        let index = 0;
+        let ultimo = "—";
+        let prossimo = sequenza[0];
+
+        if (doc.exists) {
+          index = doc.data().index || 0;
+          prossimo = sequenza[index];
+
+          ultimo = index === 0 
+            ? sequenza[sequenza.length - 1] 
+            : sequenza[index - 1];
+        }
+
+        html += `
+          <tr>
+            <td><b>${chiave}</b></td>
+            <td>${ultimo}</td>
+            <td>${prossimo}</td>
+          </tr>
+        `;
+      })
     );
+  });
 
-    let listHtml = "";
+  Promise.all(promises).then(() => {
+    html += `
+      </table>
+      <br>
+      <button type="button" id="btnChiudiDashboard">Chiudi</button>
+    `;
 
-    chiavi.forEach((chiave, i) => {
-      const doc = docs[i];
-      // Garantiamo che recuperi l'array dei NOMI (es. ["Sebastiano", "Francesca", ...])
-      const sequenzaNomi = rotazioni[chiave]; 
-      
-      let index = 0;
-      let ultimo = "—";
-      let prossimo = sequenzaNomi ? sequenzaNomi[0] : "—";
+    const popup = document.getElementById("dashboardPopup");
+    popup.innerHTML = `<div class="popup-content">${html}</div>`;
+    popup.style.display = "flex";
 
-      if (doc && doc.exists) {
-        index = doc.data().index || 0;
-      }
+    // Assegniamo l'evento direttamente dopo aver inserito l'HTML
+    document.getElementById("btnChiudiDashboard").onclick = chiudiDashboard;
+  });
+}
 
-      if (sequenzaNomi && sequenzaNomi.length > 0) {
-        // Garantiamo che l'indice rientri nei limiti dell'array
-        const safeIndex = index % sequenzaNomi.length;
-        prossimo = sequenzaNomi[safeIndex];
-
-        // Calcoliamo l'ultimo guidatore
-        const prevIndex = (safeIndex - 1 + sequenzaNomi.length) % sequenzaNomi.length;
-        ultimo = sequenzaNomi[prevIndex];
-      }
-
-      listHtml += `
-        <div class="rotation-card">
-          <div class="rotation-badge">${chiave}</div>
-          <div class="rotation-details">
-            <div class="driver-box driver-prev">
-              <span class="driver-label">Ultimo ⏪</span>
-              <span class="driver-name">${ultimo}</span>
-            </div>
-            
-            <div class="driver-box driver-next">
-              <span class="driver-label">Prossimo 🚗</span>
-              <span class="driver-name">${prossimo}</span>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-
-    document.getElementById("dashboardList").innerHTML = listHtml;
-  } catch (error) {
-    console.error("Errore nel caricamento della dashboard:", error);
-    document.getElementById("dashboardList").innerHTML = `<p class="error-text">Errore nel caricamento dei dati.</p>`;
+function chiudiDashboard() {
+  const popup = document.getElementById("dashboardPopup");
+  if (popup) {
+    popup.style.display = "none";
   }
 }
 
-
-
-
-
-// ROTAZIONE VISIVA
-
-function mostraRotazione(rotazione){
-
-let html="<h3>🔁 Rotazione attiva</h3>";
-
-rotazione.forEach(nome=>{
-
-html+=nome+"<br>";
-
-});
-
-document.getElementById("rotazione").innerHTML=html;
-
-}
 
 
 // STORICO
