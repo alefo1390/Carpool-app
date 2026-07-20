@@ -289,12 +289,12 @@ renderStorico();
 
 }
 
-// DASHBOARD (Mostra i nomi al posto della sigla della rotazione)
+// DASHBOARD (Nomi nel gruppo + Tasto Chiudi con inline-onclick)
 function apriDashboard() {
   const popup = document.getElementById("dashboardPopup");
 
   let html = `
-    <div style="background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 440px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; color: #333;">
+    <div style="background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 440px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; color: #333;" onclick="event.stopPropagation()">
       <h2 style="margin-top: 0; font-size: 22px; color: #222;">📊 Dashboard rotazioni</h2>
       <table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px;">
         <thead>
@@ -313,7 +313,7 @@ function apriDashboard() {
   chiavi.forEach(chiave => {
     promises.push(
       db.collection("rotazioni").doc(chiave).get().then(doc => {
-        const sequenza = rotazioni[chiave]; // Array dei nomi, es: ["Sebastiano", "Francesca", "Alessio", "Andrea"]
+        const sequenza = rotazioni[chiave];
 
         let index = 0;
         let ultimo = "—";
@@ -328,7 +328,6 @@ function apriDashboard() {
             : sequenza[index - 1];
         }
 
-        // Unisce i nomi separandoli con una virgola
         const nomiGruppo = sequenza ? sequenza.join(", ") : chiave;
 
         html += `
@@ -347,7 +346,7 @@ function apriDashboard() {
         </tbody>
       </table>
       <br>
-      <button id="btnChiudiDashboard" style="width: 100%; padding: 12px; background: #57a768; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer;">Chiudi</button>
+      <button onclick="chiudiDashboard()" style="width: 100%; padding: 12px; background: #57a768; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer;">Chiudi</button>
     </div>
     `;
 
@@ -362,11 +361,20 @@ function apriDashboard() {
     popup.style.justifyContent = "center";
     popup.style.zIndex = "9999";
 
-    popup.innerHTML = html;
+    // Permette di chiudere la dashboard anche cliccando fuori dalla scheda bianca
+    popup.onclick = chiudiDashboard;
 
-    document.getElementById("btnChiudiDashboard").onclick = chiudiDashboard;
+    popup.innerHTML = html;
   });
 }
+
+function chiudiDashboard() {
+  const popup = document.getElementById("dashboardPopup");
+  if (popup) {
+    popup.style.display = "none";
+  }
+}
+
 
 
 // ROTAZIONE VISIVA
