@@ -289,101 +289,80 @@ renderStorico();
 
 }
 
+// DASHBOARD (NUOVA VERSIONE)
+async function apriDashboard() {
+  const popup = document.getElementById("dashboardPopup");
+  popup.style.display = "flex";
 
-// DASHBOARD
+  popup.innerHTML = `
+    <div class="popup-content dashboard-modal">
+      <div class="dashboard-header">
+        <h2>📊 Dashboard Rotazioni</h2>
+        <button class="btn-close-icon" onclick="chiudiDashboard()">✕</button>
+      </div>
+      <div id="dashboardList" class="dashboard-list">
+        <p class="loading-text">Caricamento rotazioni...</p>
+      </div>
+      <div class="dashboard-footer">
+        <button class="btn-secondary" onclick="chiudiDashboard()">Chiudi</button>
+      </div>
+    </div>
+  `;
 
-function apriDashboard(){
+  const chiavi = Object.keys(rotazioni);
 
-let html=`
+  try {
+    const docs = await Promise.all(
+      chiavi.map(chiave => db.collection("rotazioni").doc(chiave).get())
+    );
 
-<h2>📊 Dashboard rotazioni</h2>
+    let listHtml = "";
 
-<table>
+    chiavi.forEach((chiave, i) => {
+      const doc = docs[i];
+      const sequenza = rotazioni[chiave];
+      let index = 0;
+      let ultimo = "—";
+      let prossimo = sequenza[0];
 
-<tr>
+      if (doc && doc.exists) {
+        index = doc.data().index || 0;
+        prossimo = sequenza[index];
+        ultimo = (index === 0) 
+          ? sequenza[sequenza.length - 1] 
+          : sequenza[index - 1];
+      }
 
-<th>Rotazione</th>
-<th>Ultimo 🚗</th>
-<th>Prossimo</th>
+      listHtml += `
+        <div class="rotation-card">
+          <div class="rotation-badge">${chiave}</div>
+          <div class="rotation-details">
+            <div class="driver-box driver-prev">
+              <span class="driver-label">Ultimo ⏪</span>
+              <span class="driver-name">${ultimo}</span>
+            </div>
+            
+            <div class="driver-box driver-next">
+              <span class="driver-label">Prossimo 🚗</span>
+              <span class="driver-name">${prossimo}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
 
-</tr>
-
-`;
-
-const chiavi=Object.keys(rotazioni);
-
-let promises=[];
-
-chiavi.forEach(chiave=>{
-
-promises.push(
-
-db.collection("rotazioni").doc(chiave).get().then(doc=>{
-
-const sequenza=rotazioni[chiave];
-
-let index=0;
-let ultimo="—";
-let prossimo=sequenza[0];
-
-if(doc.exists){
-
-index=doc.data().index||0;
-
-prossimo=sequenza[index];
-
-ultimo=index===0
-? sequenza[sequenza.length-1]
-: sequenza[index-1];
-
+    document.getElementById("dashboardList").innerHTML = listHtml;
+  } catch (error) {
+    console.error("Errore nel caricamento della dashboard:", error);
+    document.getElementById("dashboardList").innerHTML = `<p class="error-text">Errore nel caricamento dei dati.</p>`;
+  }
 }
 
-html+=`
-
-<tr>
-
-<td>${chiave}</td>
-<td>${ultimo}</td>
-<td>${prossimo}</td>
-
-</tr>
-
-`;
-
-})
-
-);
-
-});
-
-Promise.all(promises).then(()=>{
-
-html+=`
-
-</table>
-
-<br>
-
-<button onclick="chiudiDashboard()">Chiudi</button>
-
-`;
-
-const popup=document.getElementById("dashboardPopup");
-
-popup.innerHTML=`<div class="popup-content">${html}</div>`;
-
-popup.style.display="flex";
-
-});
-
+function chiudiDashboard() {
+  document.getElementById("dashboardPopup").style.display = "none";
 }
 
 
-function chiudiDashboard(){
-
-document.getElementById("dashboardPopup").style.display="none";
-
-}
 
 
 // ROTAZIONE VISIVA
